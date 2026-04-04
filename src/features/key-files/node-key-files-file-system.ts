@@ -33,4 +33,17 @@ export const nodeKeyFilesFileSystem: KeyFilesFileSystem = {
       mtimeMs: stat.mtimeMs,
     };
   },
+  readTextFile(targetPath) {
+    if (!fs.existsSync(targetPath)) {
+      return null;
+    }
+
+    const stat = fs.statSync(targetPath);
+
+    if (!stat.isFile()) {
+      return null;
+    }
+
+    return fs.readFileSync(targetPath, "utf8");
+  },
 };

@@ -26,6 +26,9 @@ function createFileSystem({
         mtimeMs: files[targetPath].mtimeMs ?? 123,
       };
     },
+    readTextFile(targetPath) {
+      return targetPath in files ? "example" : null;
+    },
   };
 }
 

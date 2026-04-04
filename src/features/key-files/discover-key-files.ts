@@ -11,6 +11,7 @@ export type KeyFilesFileSystem = {
   pathExists(targetPath: string): boolean;
   listDirectories(targetPath: string): string[];
   statFile(targetPath: string): KeyFileStat | null;
+  readTextFile(targetPath: string): string | null;
 };
 
 type FileCandidate = {
