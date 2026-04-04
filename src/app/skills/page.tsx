@@ -1,5 +1,6 @@
+import { SkillsBrowser } from "@/features/skills/components/skills-browser";
+import { readHermesSkills } from "@/features/skills/read-skills";
 import { createSectionMetadata } from "@/lib/create-section-metadata";
-import { PlaceholderPage } from "@/components/placeholders/placeholder-page";
 
 export const metadata = createSectionMetadata(
   "Skills",
@@ -7,16 +8,7 @@ export const metadata = createSectionMetadata(
 );
 
 export default function SkillsPage() {
-  return (
-    <PlaceholderPage
-      eyebrow="Skills"
-      title="Understand the capability surface you already have"
-      description="The skills route will help users browse installed skills, categories, descriptions, and linked files without rummaging through directories."
-      bullets={[
-        "Skill list grouped into meaningful categories.",
-        "Search and filters once the reader layer exists.",
-        "Detail views for SKILL.md content and linked references.",
-      ]}
-    />
-  );
+  const index = readHermesSkills();
+
+  return <SkillsBrowser skills={index.skills} />;
 }
