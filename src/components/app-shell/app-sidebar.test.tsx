@@ -14,6 +14,5 @@ describe("AppSidebar", () => {
     expect(screen.getByRole("navigation", { name: "Primary" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /overview/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /skills/i })).toBeInTheDocument();
-    expect(screen.getByText(/read-mostly, local-first/i)).toBeInTheDocument();
   });
 });

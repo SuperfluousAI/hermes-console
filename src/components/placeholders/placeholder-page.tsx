@@ -12,31 +12,26 @@ export function PlaceholderPage({
   bullets,
 }: PlaceholderPageProps) {
   return (
-    <div className="space-y-6">
-      <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8 shadow-2xl shadow-black/15 backdrop-blur">
-        <p className="text-xs font-medium uppercase tracking-[0.22em] text-[var(--color-accent)]">
+    <div className="space-y-8">
+      <section className="max-w-2xl">
+        <p className="font-[family-name:var(--font-jetbrains)] text-[11px] uppercase tracking-[0.2em] text-accent">
           {eyebrow}
         </p>
-        <div className="mt-4 max-w-3xl space-y-3">
-          <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            {title}
-          </h2>
-          <p className="text-sm leading-7 text-[var(--color-muted)] sm:text-base">
-            {description}
-          </p>
-        </div>
+        <h2 className="mt-3 font-[family-name:var(--font-bricolage)] text-xl font-semibold tracking-tight text-fg-strong sm:text-2xl">
+          {title}
+        </h2>
+        <p className="mt-3 text-sm leading-7 text-fg-muted">
+          {description}
+        </p>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-3 lg:grid-cols-3">
         {bullets.map((bullet) => (
           <article
             key={bullet}
-            className="rounded-2xl border border-white/8 bg-black/10 p-5"
+            className="rounded-lg border border-border bg-surface/70 p-3"
           >
-            <div className="flex items-start gap-3">
-              <span className="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--color-accent)]" />
-              <p className="text-sm leading-6 text-slate-200">{bullet}</p>
-            </div>
+            <p className="text-sm leading-6 text-fg">{bullet}</p>
           </article>
         ))}
       </section>
