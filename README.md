@@ -26,21 +26,6 @@ Hermes Console is a visibility-first interface for understanding what your Herme
 
 Hermes Console makes your Hermes setup legible: sessions, cron jobs, skills, memory, config, and key files in one calm place.
 
-## Current status
-
-Milestone 0 bootstrap is in progress.
-
-What exists right now:
-- Next.js app scaffold with App Router
-- Tailwind, TypeScript, ESLint, and Vitest wiring
-- app shell with sidebar + top bar
-- placeholder routes for Overview, Sessions, Cron, Skills, Memory, Setup, and Files
-
-Still to come before Milestone 0 feels done:
-- bootstrap cleanup and README polish
-- first real config/inventory plumbing
-- a docs sync pass after the implementation settles
-
 ## Local setup
 
 ```bash
