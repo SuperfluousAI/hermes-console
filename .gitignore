@@ -5,7 +5,9 @@
 
 # local bootstrap leftovers
 /CLAUDE.md
-/public/
+/public/*
+!/public/readme/
+!/public/readme/*.png
 
 # dependencies
 /node_modules

@@ -1,17 +1,36 @@
 # Hermes Console
 
-A local-first visibility dashboard for [Hermes Agent](https://hermes-agent.nousresearch.com/).
+A local-first dashboard for inspecting a real Hermes Agent setup without spelunking through the terminal.
 
-Hermes is powerful, but as your setup grows — sessions, cron jobs, skills, memory files, multiple agents — it gets hard to see what's going on without digging through the terminal. Hermes Console turns all of that into a single calm interface you can open in your browser.
+Hermes Console gives you one calm place to check runtime health, session history, cron state, skills, memory, and key config files. It is intentionally read-mostly: visibility first, control later.
 
-## What it shows
+## Screenshots
 
-- **Overview** — system health, gateway status, connected platforms, warnings, runtime configuration
-- **Sessions** — full session history with agent/source/platform filtering
-- **Cron** — scheduled jobs, run state, recent outputs, failure tracking
-- **Skills** — browsable skill library with categories, metadata, and linked files
-- **Memory** — MEMORY.md and USER.md with usage pressure indicators
-- **Files** — key Hermes configuration and context files with preview
+> Temporary placeholders for now — good enough for a quick OSS pass.
+
+### Overview
+
+![Hermes Console overview placeholder](./public/readme/overview-placeholder.png)
+
+### Sessions
+
+![Hermes Console sessions placeholder](./public/readme/sessions-placeholder.png)
+
+## What you get
+
+- **Overview** — runtime health, gateway status, platform connectivity, warnings, and environment snapshot
+- **Sessions** — browse past runs with filtering by agent, platform, and source
+- **Cron** — inspect jobs, recent runs, outputs, and failure state
+- **Skills** — browse installed skills and linked references/templates/scripts
+- **Memory** — inspect `MEMORY.md` and `USER.md` with pressure indicators
+- **Files** — preview the key config and context files that shape Hermes behaviour
+- **Usage** — token and estimated cost visibility from local session data
+
+## Why it exists
+
+Hermes is strong in the terminal, but once you have a real setup — multiple agents, cron jobs, memory files, sessions, and platform adapters — basic visibility gets messy fast. Hermes Console turns that runtime sprawl into a product-shaped local UI.
+
+This is not trying to be a generic multi-agent control plane. It is a focused operator surface for Hermes.
 
 ## Quick start
 
@@ -23,36 +42,42 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Hermes Console will read your local Hermes state from `~/.hermes` automatically.
+Then open [http://localhost:3000](http://localhost:3000).
+
+By default, Hermes Console reads from your local Hermes state under `~/.hermes`.
 
 ## Configuration
+
+Copy `.env.example` to `.env.local` and adjust as needed.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `HERMES_CONSOLE_HERMES_DIR` | `~/.hermes` | Hermes state root |
-| `HERMES_CONSOLE_WORKSPACE_DIR` | `~` | Workspace root for context files |
-
-Copy `.env.example` to `.env.local` to configure.
+| `HERMES_CONSOLE_WORKSPACE_DIR` | `~` | Workspace root used for context/config file discovery |
 
 ## Stack
 
-Next.js, React, TypeScript, Tailwind CSS. No database — reads Hermes state directly from disk.
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- No separate app database — the UI reads Hermes state directly from disk
 
 ## Development
 
 ```bash
-pnpm dev        # start dev server
-pnpm build      # production build
-pnpm test       # run tests
-pnpm lint       # lint
+pnpm dev
+pnpm build
+pnpm test
+pnpm lint
 ```
 
-## Design principles
+## Product stance
 
-- **Read-only first** — observe and understand, don't control
-- **Local-first** — runs on localhost, reads local state, no SaaS dependency
-- **Calm over clever** — information-dense but breathable, not dashboard theatre
-- **Hermes-native** — built for real Hermes runtime surfaces, not abstract agent frameworks
+- **Read-mostly** — start with visibility, not mutation
+- **Local-first** — runs on localhost against local Hermes state
+- **Calm, dense UI** — useful signal without dashboard theatre
+- **Hermes-native** — built around actual Hermes runtime surfaces, not abstract AI-tooling fluff
 
 ## License
 
