@@ -98,6 +98,7 @@ const appMeta = {
   gatewayState: "running" as const,
   updateStatus: "up_to_date" as const,
   updateBehind: 0,
+  connectedPlatforms: ["discord"],
   connectedPlatformCount: 1,
 };
 

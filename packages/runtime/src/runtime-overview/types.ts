@@ -148,6 +148,7 @@ export type ShellStatusSummary = {
   gatewayState: GatewaySummary["state"];
   updateStatus: UpdateStatusSummary["status"];
   updateBehind: number | null;
+  connectedPlatforms: string[];
   connectedPlatformCount: number;
 };
 

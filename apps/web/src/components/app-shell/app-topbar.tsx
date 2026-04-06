@@ -14,6 +14,14 @@ function gatewayClass(state: string) {
   return "border-amber-500/25 bg-amber-500/10 text-amber-200";
 }
 
+function installClass(status: string) {
+  if (status === "missing") {
+    return "border-rose-500/25 bg-rose-500/10 text-rose-200";
+  }
+
+  return "border-amber-500/25 bg-amber-500/10 text-amber-200";
+}
+
 export function AppTopbar() {
   const appMetaQuery = useQuery({
     ...appMetaQueryOptions(),
@@ -45,6 +53,8 @@ export function AppTopbar() {
   }
 
   const { data } = appMetaQuery;
+  const showUpdateChip = data.updateStatus === "behind" && data.updateBehind != null;
+  const showInstallChip = data.installStatus !== "ready";
 
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 px-6 py-3 backdrop-blur">
@@ -58,37 +68,30 @@ export function AppTopbar() {
         >
           GitHub
         </a>
-        <span className="rounded-md border border-border/80 bg-bg/40 px-2 py-1 text-fg-muted">
-          {data.rootKind === "env_override" ? "custom root" : "default root"}
-        </span>
         <span className="max-w-[14rem] truncate rounded-md border border-border/80 bg-bg/40 px-2 py-1 text-fg-muted">
           {data.rootPath}
         </span>
         <span className={["rounded-md border px-2 py-1", gatewayClass(data.gatewayState)].join(" ")}>
           gateway {data.gatewayState}
         </span>
-        <span className="rounded-md border border-border/80 bg-bg/40 px-2 py-1 text-fg-muted">
-          {data.connectedPlatformCount} live
-        </span>
-        <span className="rounded-md border border-border/80 bg-bg/40 px-2 py-1 text-fg-muted">
-          {data.updateStatus === "behind"
-            ? `${data.updateBehind} behind`
-            : data.updateStatus === "up_to_date"
-              ? "up to date"
-              : "update unknown"}
-        </span>
-        <span
-          className={[
-            "rounded-md border px-2 py-1",
-            data.installStatus === "ready"
-              ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-200"
-              : data.installStatus === "missing"
-                ? "border-rose-500/25 bg-rose-500/10 text-rose-200"
-                : "border-amber-500/25 bg-amber-500/10 text-amber-200",
-          ].join(" ")}
-        >
-          install {data.installStatus}
-        </span>
+        {data.connectedPlatforms.map((platform) => (
+          <span
+            key={platform}
+            className="rounded-md border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-emerald-200"
+          >
+            {platform}
+          </span>
+        ))}
+        {showUpdateChip ? (
+          <span className="rounded-md border border-amber-500/25 bg-amber-500/10 px-2 py-1 text-amber-200">
+            {data.updateBehind} behind
+          </span>
+        ) : null}
+        {showInstallChip ? (
+          <span className={["rounded-md border px-2 py-1", installClass(data.installStatus)].join(" ")}>
+            install {data.installStatus}
+          </span>
+        ) : null}
       </div>
     </header>
   );

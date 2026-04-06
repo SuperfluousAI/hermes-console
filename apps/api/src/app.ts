@@ -39,6 +39,7 @@ const createAppMeta = (): AppMeta => {
   const shellStatus = readShellStatusQuery();
 
   return {
+    connectedPlatforms: shellStatus.data.connectedPlatforms,
     connectedPlatformCount: shellStatus.data.connectedPlatformCount,
     gatewayState: shellStatus.data.gatewayState,
     installStatus: shellStatus.data.installStatus,

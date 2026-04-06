@@ -38,7 +38,7 @@ const loadEnvironment = (repoRoot: string): void => {
     const filePath = path.join(repoRoot, fileName);
 
     if (fs.existsSync(filePath)) {
-      dotenv.config({ path: filePath, override: false });
+      dotenv.config({ path: filePath, override: false, quiet: true });
     }
   });
 };

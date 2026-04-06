@@ -53,6 +53,9 @@ export function readShellStatusQuery(): HermesQueryResult<ShellStatusSummary> {
     updateContent.content ?? "",
   );
   const issues: HermesQueryIssue[] = [...installation.issues];
+  const connectedPlatforms = Array.from(
+    new Set([...gateway.connectedPlatforms, ...channels.connectedPlatforms]),
+  ).sort((left, right) => left.localeCompare(right));
 
   if (!installation.data.hermesRootExists) {
     issues.push({
@@ -108,10 +111,8 @@ export function readShellStatusQuery(): HermesQueryResult<ShellStatusSummary> {
       gatewayState: gateway.state,
       updateStatus: update.status,
       updateBehind: update.behind,
-      connectedPlatformCount: new Set([
-        ...gateway.connectedPlatforms,
-        ...channels.connectedPlatforms,
-      ]).size,
+      connectedPlatforms,
+      connectedPlatformCount: connectedPlatforms.length,
     },
     capturedAt,
     status:

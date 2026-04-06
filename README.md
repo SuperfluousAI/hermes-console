@@ -71,7 +71,13 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Then open [http://127.0.0.1:5173](http://127.0.0.1:5173) in development.
+Then open the local Vite URL printed by `pnpm dev` — usually [http://127.0.0.1:5173](http://127.0.0.1:5173), but Vite will pick the next free port if 5173 is already taken.
+
+You should also see the API log its listening address, for example:
+
+```text
+[api] listening on http://127.0.0.1:3940
+```
 
 For a production-style local run:
 
