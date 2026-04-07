@@ -1,5 +1,0 @@
-
-
-> @hermes-console/api@0.1.0 typecheck /home/shan/giles/hermes-console/apps/api
-> tsc --noEmit -p tsconfig.json
-

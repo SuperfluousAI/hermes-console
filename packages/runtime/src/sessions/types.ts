@@ -89,6 +89,7 @@ export type HermesSessionSummary = {
   estimatedCostUsd: number | null;
   costStatus: string | null;
   memoryFlushed: boolean | null;
+  hasStateTranscript: boolean;
   hasMessagingMetadata: boolean;
   cronJobId: string | null;
   cronJobName: string | null;
@@ -251,6 +252,7 @@ export const hermesSessionSummarySchema = z.object({
   estimatedCostUsd: z.number().nullable(),
   costStatus: z.string().nullable(),
   memoryFlushed: z.boolean().nullable(),
+  hasStateTranscript: z.boolean(),
   hasMessagingMetadata: z.boolean(),
   cronJobId: z.string().nullable(),
   cronJobName: z.string().nullable(),

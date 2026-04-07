@@ -11,6 +11,9 @@ export function readHermesSessionsQuery(): HermesQueryResult<HermesSessionsIndex
   const installation = readHermesInstallationResult();
   const sessions = readHermesSessionsResult();
   const issues: HermesQueryIssue[] = [...installation.issues, ...sessions.issues];
+  const agentsWithSessionSources = installation.data.agents.filter(
+    (agent) => agent.presence.stateDb || agent.presence.sessions,
+  );
   const agentsWithStateDb = installation.data.agents.filter((agent) => agent.presence.stateDb);
 
   if (!installation.data.hermesRootExists) {
@@ -25,15 +28,30 @@ export function readHermesSessionsQuery(): HermesQueryResult<HermesSessionsIndex
     });
   }
 
-  if (agentsWithStateDb.length === 0) {
+  if (agentsWithSessionSources.length === 0) {
+    issues.push({
+      id: "sessions-sources-missing",
+      code: "missing_path",
+      severity: installation.data.hermesRootExists ? "warning" : "error",
+      summary: "No session sources found",
+      detail:
+        "Hermes Console did not find any session databases or messaging session indexes under the detected agent roots.",
+      lookedFor: installation.data.agents.flatMap((agent) => [
+        path.join(agent.rootPath, "state.db"),
+        path.join(agent.rootPath, "sessions", "sessions.json"),
+      ]),
+    });
+  } else if (agentsWithStateDb.length === 0) {
     issues.push({
       id: "sessions-state-db-missing",
       code: "missing_path",
-      severity: installation.data.hermesRootExists ? "warning" : "error",
+      severity: "info",
       summary: "No state.db files found",
       detail:
-        "Hermes Console did not find any session databases under the detected agent roots.",
-      lookedFor: installation.data.agents.map((agent) => path.join(agent.rootPath, "state.db")),
+        "Hermes Console found messaging session indexes, but transcript-backed state.db files were not available under the detected agent roots.",
+      lookedFor: installation.data.agents.map((agent) =>
+        path.join(agent.rootPath, "state.db"),
+      ),
     });
   }
 
@@ -41,7 +59,7 @@ export function readHermesSessionsQuery(): HermesQueryResult<HermesSessionsIndex
     data: sessions.data,
     capturedAt,
     status:
-      !installation.data.hermesRootExists || agentsWithStateDb.length === 0
+      !installation.data.hermesRootExists || agentsWithSessionSources.length === 0
         ? "missing"
         : issues.length > 0 || installation.data.status === "partial"
           ? "partial"

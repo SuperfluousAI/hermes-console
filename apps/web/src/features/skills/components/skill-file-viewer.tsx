@@ -20,7 +20,7 @@ function createViewerLink({
 }) {
   return {
     params: {
-      skillId: encodeURIComponent(skillId),
+      skillId,
     },
     search: file === "skill" ? {} : { file },
   };

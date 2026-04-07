@@ -47,6 +47,9 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
       <div className="space-y-3">
         {sessions.map((session) => {
           const formattedCost = formatCost(session.estimatedCostUsd);
+          const stateOnly = session.hasStateTranscript && !session.hasMessagingMetadata;
+          const messagingOnly =
+            !session.hasStateTranscript && session.hasMessagingMetadata;
 
           return (
             <article
@@ -63,9 +66,14 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
                     <span className="rounded-full border border-border/80 bg-bg/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-muted">
                       {session.sourceLabel}
                     </span>
-                    {!session.hasMessagingMetadata ? (
+                    {stateOnly ? (
                       <span className="rounded-full border border-border/80 bg-bg/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-muted">
                         transcript only
+                      </span>
+                    ) : null}
+                    {messagingOnly ? (
+                      <span className="rounded-full border border-border/80 bg-bg/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-muted">
+                        messaging only
                       </span>
                     ) : null}
                   </div>

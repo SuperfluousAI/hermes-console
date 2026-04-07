@@ -211,7 +211,7 @@ const skillDetailRoute = createRoute({
     selectedFileId: search.file ?? null,
   }),
   loader: async ({ context, deps, params }) => {
-    const skillId = decodeURIComponent(params.skillId);
+    const { skillId } = params;
 
     const [, loaderData] = await Promise.all([
       context.queryClient.ensureQueryData(
@@ -237,7 +237,7 @@ const skillDetailRoute = createRoute({
       <SkillDetailPage
         selectedLinkedFileError={loaderData.selectedLinkedFileError}
         selectedFileId={search.file ?? null}
-        skillId={decodeURIComponent(params.skillId)}
+        skillId={params.skillId}
       />
     );
   },

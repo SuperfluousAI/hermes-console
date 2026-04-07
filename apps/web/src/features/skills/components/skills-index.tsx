@@ -46,7 +46,7 @@ export function SkillsIndex({
               <Link
                 key={skill.id}
                 params={{
-                  skillId: encodeURIComponent(skill.id),
+                  skillId: skill.id,
                 }}
                 to="/skills/$skillId"
                 className="block rounded-md border border-border/70 bg-bg/40 p-3 transition-colors hover:border-border"

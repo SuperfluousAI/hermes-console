@@ -1,5 +1,0 @@
-
-
-> @hermes-console/runtime@0.1.0 typecheck /home/shan/giles/hermes-console/packages/runtime
-> tsc --noEmit -p tsconfig.json
-

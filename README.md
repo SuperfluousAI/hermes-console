@@ -64,7 +64,7 @@ Vite React app:
 ## Quick start
 
 ```bash
-git clone https://github.com/giles-io/hermes-console.git
+git clone https://github.com/shan8851/hermes-console.git
 cd hermes-console
 pnpm install
 cp .env.example .env.local
@@ -96,7 +96,8 @@ Copy `.env.example` to `.env.local` and adjust as needed.
 |----------|---------|-------------|
 | `HERMES_CONSOLE_HERMES_DIR` | `~/.hermes` | Hermes state root |
 | `HERMES_CONSOLE_WORKSPACE_DIR` | unset | Optional workspace root for extra high-signal file discovery |
-| `PORT` | `3940` | Local API port |
+| `HERMES_CONSOLE_HERMES_BIN` | `hermes` | Optional Hermes CLI path override for runtime diagnostics |
+| `PORT` | `3940` | Local API port used by the API and the web dev proxy |
 
 ## Development
 
@@ -114,6 +115,8 @@ pnpm lint
 - a runtime package watcher
 - the local API on `127.0.0.1:3940`
 - the Vite app on `127.0.0.1:5173`
+
+The web app reads the same root `.env.local` during development, so if you set `PORT`, the Vite `/api` proxy follows it automatically.
 
 ## Product stance
 

@@ -80,6 +80,13 @@ const skillLinkedFile = {
   absolutePath: "/tmp/hermes/skills/demo-skill/guide.md",
 };
 
+const nestedSkillLinkedFile = {
+  id: "references/guide.md",
+  kind: "reference" as const,
+  relativePath: "references/guide.md",
+  absolutePath: "/tmp/hermes/skills/workspace/demo-skill/references/guide.md",
+};
+
 const skillSummary = {
   id: "demo-skill",
   slug: "demo-skill",
@@ -89,6 +96,17 @@ const skillSummary = {
   skillPath: "/tmp/hermes/skills/demo-skill/SKILL.md",
   parseStatus: "valid" as const,
   linkedFiles: [skillLinkedFile],
+};
+
+const nestedSkillSummary = {
+  id: "workspace/demo-skill",
+  slug: "demo-skill",
+  name: "Nested Demo Skill",
+  description: "Nested demo description",
+  category: "workspace",
+  skillPath: "/tmp/hermes/skills/workspace/demo-skill/SKILL.md",
+  parseStatus: "valid" as const,
+  linkedFiles: [nestedSkillLinkedFile],
 };
 
 const appMeta = {
@@ -302,6 +320,35 @@ describe("selected preview routes", () => {
         "Linked skill file not found for demo-skill/missing-file",
       ),
     ).toBeTruthy();
+    expect(screen.queryByText("This view could not be loaded")).toBeNull();
+  });
+
+  it("loads nested skill ids without double-encoding the route params", async () => {
+    await renderRoute({
+      initialEntry: "/skills/workspace%2Fdemo-skill?file=references%2Fguide.md",
+      responses: {
+        "/api/meta/app": {
+          body: appMeta,
+        },
+        "/api/skills/workspace%2Fdemo-skill": {
+          body: createSnapshotEnvelope({
+            summary: nestedSkillSummary,
+            rawContent: "Nested skill body",
+            body: "Nested skill body",
+            frontmatter: {},
+          }),
+        },
+        "/api/skills/workspace%2Fdemo-skill/files/references%2Fguide.md": {
+          body: createSnapshotEnvelope({
+            file: nestedSkillLinkedFile,
+            content: "Nested guide body",
+          }),
+        },
+      },
+    });
+
+    expect(await screen.findByText("Nested Demo Skill")).toBeTruthy();
+    expect(await screen.findByText("Nested guide body")).toBeTruthy();
     expect(screen.queryByText("This view could not be loaded")).toBeNull();
   });
 });

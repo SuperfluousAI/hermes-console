@@ -98,6 +98,61 @@ function resolveTotalTokens({
   return stateTotal;
 }
 
+function createMessagingOnlySession({
+  agent,
+  messaging,
+}: {
+  agent: SessionAgentRef;
+  messaging: MessagingSessionRecord;
+}): HermesSessionSummary | null {
+  const startedAt = messaging.createdAt ?? messaging.updatedAt;
+  const lastActivityAt = messaging.updatedAt ?? messaging.createdAt;
+
+  if (!startedAt || !lastActivityAt) {
+    return null;
+  }
+
+  const inferredSource = inferCronJobId(messaging.sessionId) ? "cron" : null;
+
+  return {
+    id: `${agent.id}:${messaging.sessionId}`,
+    agentId: agent.id,
+    agentLabel: agent.label,
+    agentSource: agent.source,
+    agentRootPath: agent.rootPath,
+    sessionId: messaging.sessionId,
+    sessionKey: messaging.sessionKey,
+    source: inferredSource,
+    sourceLabel: createSourceLabel({
+      source: inferredSource,
+      platform: messaging.platform,
+      chatType: messaging.chatType,
+    }),
+    title: createTitle({
+      stateTitle: null,
+      displayName: messaging.displayName,
+      sessionId: messaging.sessionId,
+    }),
+    displayName: messaging.displayName,
+    platform: messaging.platform,
+    chatType: messaging.chatType,
+    model: null,
+    startedAt,
+    endedAt: null,
+    lastActivityAt,
+    messageCount: 0,
+    toolCallCount: 0,
+    totalTokens: messaging.totalTokens ?? 0,
+    estimatedCostUsd: messaging.estimatedCostUsd,
+    costStatus: messaging.costStatus,
+    memoryFlushed: messaging.memoryFlushed,
+    hasStateTranscript: false,
+    hasMessagingMetadata: true,
+    cronJobId: inferCronJobId(messaging.sessionId),
+    cronJobName: null,
+  } satisfies HermesSessionSummary;
+}
+
 export function parseMessagingSessionIndex(rawContent: string): MessagingSessionRecord[] {
   const parsed = messagingSessionIndexSourceSchema.parse(
     JSON.parse(rawContent),
@@ -146,9 +201,9 @@ export function combineAgentSessions({
   messagingSessions: MessagingSessionRecord[];
 }): HermesSessionSummary[] {
   const messagingBySessionId = new Map(messagingSessions.map((record) => [record.sessionId, record]));
+  const stateSessionIds = new Set(stateSessions.map((session) => session.id));
 
-  return stateSessions
-    .map((stateSession) => {
+  const combinedStateSessions = stateSessions.map((stateSession) => {
       const messaging = messagingBySessionId.get(stateSession.id) ?? null;
       const lastActivityAt = messaging?.updatedAt ?? stateSession.endedAt ?? stateSession.startedAt;
 
@@ -185,12 +240,26 @@ export function combineAgentSessions({
         estimatedCostUsd: messaging?.estimatedCostUsd ?? stateSession.estimatedCostUsd,
         costStatus: messaging?.costStatus ?? stateSession.costStatus,
         memoryFlushed: messaging?.memoryFlushed ?? null,
+        hasStateTranscript: true,
         hasMessagingMetadata: Boolean(messaging),
         cronJobId,
         cronJobName: null,
       } satisfies HermesSessionSummary;
     })
     .sort(compareByLastActivity);
+
+  const messagingOnlySessions = messagingSessions
+    .filter((messagingSession) => !stateSessionIds.has(messagingSession.sessionId))
+    .flatMap((messagingSession) => {
+      const session = createMessagingOnlySession({
+        agent,
+        messaging: messagingSession,
+      });
+
+      return session ? [session] : [];
+    });
+
+  return [...combinedStateSessions, ...messagingOnlySessions].sort(compareByLastActivity);
 }
 
 export function applyCronJobNames({

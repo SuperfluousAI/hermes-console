@@ -122,8 +122,24 @@ export function SessionsBrowser({
     },
     {
       label: "transcript only",
-      value: formatCount(filteredSessions.filter((session) => !session.hasMessagingMetadata).length),
+      value: formatCount(
+        filteredSessions.filter(
+          (session) =>
+            session.hasStateTranscript && !session.hasMessagingMetadata,
+        ).length,
+      ),
       detail: "Sessions with transcript data but no messaging context.",
+      tone: "muted" as const,
+    },
+    {
+      label: "messaging only",
+      value: formatCount(
+        filteredSessions.filter(
+          (session) =>
+            !session.hasStateTranscript && session.hasMessagingMetadata,
+        ).length,
+      ),
+      detail: "Sessions with messaging context but no transcript-backed state.db record.",
       tone: "muted" as const,
     },
     {

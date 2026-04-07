@@ -13,7 +13,7 @@ function createSkillLink({
 }) {
   return {
     params: {
-      skillId: encodeURIComponent(skillId),
+      skillId,
     },
     search: linkedFileId
       ? {
