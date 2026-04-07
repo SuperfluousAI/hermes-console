@@ -1,21 +1,26 @@
 # AGENTS.md — Hermes Console
 
 ## What this is
+
 Hermes Console is a local-first monorepo for inspecting Hermes Agent setups.
 
 Current workspace shape:
+
 - `packages/runtime` for pure schemas, types, and domain helpers
 - `apps/api` for filesystem reads, CLI diagnostics, and the local HTTP boundary
 - `apps/web` for the Vite React UI
 
 It is:
+
 - Hermes-native
 - read-mostly at launch
 - visibility-first, not chat-first
 - intended as a clean, focused product
 
 ## Product priorities
+
 When working in this repo, optimise for:
+
 1. legibility
 2. calm operator UX
 3. simple local setup
@@ -24,7 +29,9 @@ When working in this repo, optimise for:
 6. small, testable units
 
 ## Non-goals for v1
+
 Do not let the repo drift into:
+
 - generic multi-agent platform abstractions
 - terminal emulator work
 - chat-client parity work
@@ -33,6 +40,7 @@ Do not let the repo drift into:
 - Shan-specific bespoke workflow surfaces as core primitives
 
 ## Code structure expectations
+
 - Prefer small composable components over giant page files.
 - Keep reader/parsing logic in `apps/api` or `packages/runtime`, never in `apps/web`.
 - Keep `packages/runtime` pure and framework-agnostic.
@@ -42,7 +50,9 @@ Do not let the repo drift into:
 - Avoid catch-all `utils` dumping grounds when a domain module is clearer.
 
 ## Testing expectations
+
 Add unit tests for:
+
 - readers
 - parsers
 - normalizers
@@ -52,8 +62,10 @@ Add unit tests for:
 If logic is important enough to deserve a helper, it usually deserves a test.
 
 ## Local config expectations
+
 Expect `.env.local` for local overrides.
 Planned important env vars:
+
 - `HERMES_CONSOLE_HERMES_DIR`
 - `HERMES_CONSOLE_WORKSPACE_DIR`
 - `PORT`
@@ -61,6 +73,7 @@ Planned important env vars:
 Default assumption is a standard Hermes setup under `~/.hermes`.
 
 ## UX expectations
+
 - Dark-first.
 - Giles-style information clarity.
 - Hermes-style branding and accents.
@@ -69,7 +82,9 @@ Default assumption is a standard Hermes setup under `~/.hermes`.
 - Avoid noisy dashboards and fake enterprise complexity.
 
 ## Before major implementation work
+
 Check:
+
 - `docs/prd.md`
 - `docs/implementation-plan.md`
 - this file

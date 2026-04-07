@@ -1,18 +1,14 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from '@tanstack/react-query';
 
-import { QueryStatusCard } from "@/components/ui/query-status-card";
-import {
-  apiQueryKeys,
-  inventoryQueryOptions,
-  overviewQueryOptions,
-} from "@/lib/api";
-import { AgentList } from "@/features/inventory/components/agent-list";
-import { OverviewAttention } from "@/features/runtime-overview/components/overview-attention";
-import { OverviewConfiguration } from "@/features/runtime-overview/components/overview-configuration";
-import { OverviewDiagnostics } from "@/features/runtime-overview/components/overview-diagnostics";
-import { OverviewGlance } from "@/features/runtime-overview/components/overview-glance";
-import { OverviewHero } from "@/features/runtime-overview/components/overview-hero";
-import { OverviewSurfaces } from "@/features/runtime-overview/components/overview-surfaces";
+import { QueryStatusCard } from '@/components/ui/query-status-card';
+import { apiQueryKeys, inventoryQueryOptions, overviewQueryOptions } from '@/lib/api';
+import { AgentList } from '@/features/inventory/components/agent-list';
+import { OverviewAttention } from '@/features/runtime-overview/components/overview-attention';
+import { OverviewConfiguration } from '@/features/runtime-overview/components/overview-configuration';
+import { OverviewDiagnostics } from '@/features/runtime-overview/components/overview-diagnostics';
+import { OverviewGlance } from '@/features/runtime-overview/components/overview-glance';
+import { OverviewHero } from '@/features/runtime-overview/components/overview-hero';
+import { OverviewSurfaces } from '@/features/runtime-overview/components/overview-surfaces';
 
 export const HomePage = () => {
   const overview = useSuspenseQuery(overviewQueryOptions());
@@ -27,11 +23,7 @@ export const HomePage = () => {
       />
       <OverviewHero
         overview={overview.data.data}
-        refreshQueryKeys={[
-          apiQueryKeys.overview,
-          apiQueryKeys.inventory,
-          apiQueryKeys.diagnostics,
-        ]}
+        refreshQueryKeys={[apiQueryKeys.overview, apiQueryKeys.inventory, apiQueryKeys.diagnostics]}
       />
       <OverviewDiagnostics />
       <OverviewAttention overview={overview.data.data} />

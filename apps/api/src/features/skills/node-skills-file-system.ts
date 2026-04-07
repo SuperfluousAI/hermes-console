@@ -1,6 +1,6 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
-import type { SkillsFileSystem } from "@/features/skills/read-skills-index";
+import type { SkillsFileSystem } from '@/features/skills/read-skills-index';
 
 export const nodeSkillsFileSystem: SkillsFileSystem = {
   pathExists(targetPath) {
@@ -52,9 +52,9 @@ export const nodeSkillsFileSystem: SkillsFileSystem = {
         return null;
       }
 
-      return fs.readFileSync(targetPath, "utf8");
+      return fs.readFileSync(targetPath, 'utf8');
     } catch {
       return null;
     }
-  },
+  }
 };

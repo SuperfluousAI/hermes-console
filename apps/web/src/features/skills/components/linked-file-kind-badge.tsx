@@ -1,10 +1,10 @@
-import type { SkillLinkedFileKind } from "@hermes-console/runtime";
+import type { SkillLinkedFileKind } from '@hermes-console/runtime';
 
 const LABELS: Record<SkillLinkedFileKind, string> = {
-  reference: "reference",
-  template: "template",
-  script: "script",
-  asset: "asset",
+  reference: 'reference',
+  template: 'template',
+  script: 'script',
+  asset: 'asset'
 };
 
 export function LinkedFileKindBadge({ kind }: { kind: SkillLinkedFileKind }) {

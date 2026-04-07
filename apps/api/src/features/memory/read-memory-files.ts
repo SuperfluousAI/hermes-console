@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from 'node:path';
 
 import {
   DEFAULT_MEMORY_CHAR_LIMIT,
@@ -8,32 +8,32 @@ import {
   type MemoryLimitSummary,
   type MemoryPressureLevel,
   type MemoryReadResult,
-  type MemoryScope,
-} from "@hermes-console/runtime";
+  type MemoryScope
+} from '@hermes-console/runtime';
 
 export type MemoryFileSystem = {
   pathExists(targetPath: string): boolean;
   readTextFile(targetPath: string): string | null;
 };
 
-const MEMORY_SECTION_NAME = "memory";
+const MEMORY_SECTION_NAME = 'memory';
 const MEMORY_FILE_NAMES: Record<MemoryScope, string> = {
-  memory: "MEMORY.md",
-  user: "USER.md",
+  memory: 'MEMORY.md',
+  user: 'USER.md'
 };
 
 function normalizeText(value: string) {
-  return value.replace(/\r\n/g, "\n");
+  return value.replace(/\r\n/g, '\n');
 }
 
 function parseConfiguredLimit({
   configText,
-  key,
+  key
 }: {
   configText: string;
-  key: "memory_char_limit" | "user_char_limit";
+  key: 'memory_char_limit' | 'user_char_limit';
 }) {
-  const lines = normalizeText(configText).split("\n");
+  const lines = normalizeText(configText).split('\n');
   let inMemorySection = false;
 
   for (const line of lines) {
@@ -60,38 +60,38 @@ function parseConfiguredLimit({
 
 function resolveLimitSummary({
   configuredLimit,
-  fallback,
+  fallback
 }: {
   configuredLimit: number | null;
   fallback: number;
 }): MemoryLimitSummary {
-  if (typeof configuredLimit === "number" && Number.isFinite(configuredLimit)) {
+  if (typeof configuredLimit === 'number' && Number.isFinite(configuredLimit)) {
     return {
       value: configuredLimit,
-      source: "config",
+      source: 'config'
     };
   }
 
   return {
     value: fallback,
-    source: "default",
+    source: 'default'
   };
 }
 
 function derivePressureLevel(usageRatio: number): MemoryPressureLevel {
   if (usageRatio >= 1) {
-    return "at_limit";
+    return 'at_limit';
   }
 
   if (usageRatio >= 0.9) {
-    return "near_limit";
+    return 'near_limit';
   }
 
   if (usageRatio >= 0.75) {
-    return "approaching_limit";
+    return 'approaching_limit';
   }
 
-  return "healthy";
+  return 'healthy';
 }
 
 function toUsagePercentage(charCount: number, limit: number) {
@@ -102,33 +102,21 @@ function toUsagePercentage(charCount: number, limit: number) {
   return Math.round((charCount / limit) * 100);
 }
 
-function createEntries({
-  scope,
-  entryBlocks,
-}: {
-  scope: MemoryScope;
-  entryBlocks: string[];
-}): MemoryEntry[] {
+function createEntries({ scope, entryBlocks }: { scope: MemoryScope; entryBlocks: string[] }): MemoryEntry[] {
   return entryBlocks.map((entryContent, index) => ({
     id: `${scope}-${index + 1}`,
     content: entryContent,
-    charCount: entryContent.length,
+    charCount: entryContent.length
   }));
 }
 
-function parseMemoryContent({
-  scope,
-  rawContent,
-}: {
-  scope: MemoryScope;
-  rawContent: string;
-}) {
+function parseMemoryContent({ scope, rawContent }: { scope: MemoryScope; rawContent: string }) {
   const normalized = normalizeText(rawContent).trim();
 
   if (!normalized) {
     return {
-      preamble: "",
-      entries: [] as MemoryEntry[],
+      preamble: '',
+      entries: [] as MemoryEntry[]
     };
   }
 
@@ -139,19 +127,19 @@ function parseMemoryContent({
 
   if (segments.length === 0) {
     return {
-      preamble: "",
-      entries: [] as MemoryEntry[],
+      preamble: '',
+      entries: [] as MemoryEntry[]
     };
   }
 
-  const firstSegment = segments[0] ?? "";
-  const hasPreamble = scope === "memory" && firstSegment.startsWith("# MEMORY.md");
-  const preamble = hasPreamble ? firstSegment : "";
+  const firstSegment = segments[0] ?? '';
+  const hasPreamble = scope === 'memory' && firstSegment.startsWith('# MEMORY.md');
+  const preamble = hasPreamble ? firstSegment : '';
   const entryBlocks = hasPreamble ? segments.slice(1) : segments;
 
   return {
     preamble,
-    entries: createEntries({ scope, entryBlocks }),
+    entries: createEntries({ scope, entryBlocks })
   };
 }
 
@@ -159,15 +147,15 @@ function buildMemoryFileSummary({
   scope,
   hermesRoot,
   fileSystem,
-  limit,
+  limit
 }: {
   scope: MemoryScope;
   hermesRoot: string;
   fileSystem: MemoryFileSystem;
   limit: number;
 }): MemoryFileSummary {
-  const filePath = path.join(hermesRoot, "memories", MEMORY_FILE_NAMES[scope]);
-  const rawContent = fileSystem.readTextFile(filePath) ?? "";
+  const filePath = path.join(hermesRoot, 'memories', MEMORY_FILE_NAMES[scope]);
+  const rawContent = fileSystem.readTextFile(filePath) ?? '';
   const exists = fileSystem.pathExists(filePath);
   const { preamble, entries } = parseMemoryContent({ scope, rawContent });
   const charCount = normalizeText(rawContent).trim().length;
@@ -175,7 +163,7 @@ function buildMemoryFileSummary({
 
   return {
     scope,
-    label: scope === "memory" ? "MEMORY" : "USER",
+    label: scope === 'memory' ? 'MEMORY' : 'USER',
     filePath,
     exists,
     rawContent,
@@ -185,62 +173,62 @@ function buildMemoryFileSummary({
     limit,
     usageRatio,
     usagePercentage: toUsagePercentage(charCount, limit),
-    pressureLevel: derivePressureLevel(usageRatio),
+    pressureLevel: derivePressureLevel(usageRatio)
   };
 }
 
-function deriveReadStatus(memoryExists: boolean, userExists: boolean): MemoryReadResult["status"] {
+function deriveReadStatus(memoryExists: boolean, userExists: boolean): MemoryReadResult['status'] {
   if (memoryExists && userExists) {
-    return "ready";
+    return 'ready';
   }
 
   if (memoryExists || userExists) {
-    return "partial";
+    return 'partial';
   }
 
-  return "missing";
+  return 'missing';
 }
 
 export function readMemoryFiles({
   hermesRoot,
-  fileSystem,
+  fileSystem
 }: {
   hermesRoot: string;
   fileSystem: MemoryFileSystem;
 }): MemoryReadResult {
-  const configPath = path.join(hermesRoot, "config.yaml");
-  const configText = fileSystem.readTextFile(configPath) ?? "";
+  const configPath = path.join(hermesRoot, 'config.yaml');
+  const configText = fileSystem.readTextFile(configPath) ?? '';
 
   const limits = {
     memory: resolveLimitSummary({
       configuredLimit: parseConfiguredLimit({
         configText,
-        key: "memory_char_limit",
+        key: 'memory_char_limit'
       }),
-      fallback: DEFAULT_MEMORY_CHAR_LIMIT,
+      fallback: DEFAULT_MEMORY_CHAR_LIMIT
     }),
     user: resolveLimitSummary({
       configuredLimit: parseConfiguredLimit({
         configText,
-        key: "user_char_limit",
+        key: 'user_char_limit'
       }),
-      fallback: DEFAULT_USER_CHAR_LIMIT,
-    }),
+      fallback: DEFAULT_USER_CHAR_LIMIT
+    })
   };
 
   const files = {
     memory: buildMemoryFileSummary({
-      scope: "memory",
+      scope: 'memory',
       hermesRoot,
       fileSystem,
-      limit: limits.memory.value,
+      limit: limits.memory.value
     }),
     user: buildMemoryFileSummary({
-      scope: "user",
+      scope: 'user',
       hermesRoot,
       fileSystem,
-      limit: limits.user.value,
-    }),
+      limit: limits.user.value
+    })
   };
 
   return {
@@ -248,6 +236,6 @@ export function readMemoryFiles({
     rootPath: hermesRoot,
     configPath,
     limits,
-    files,
+    files
   };
 }

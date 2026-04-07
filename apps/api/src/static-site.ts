@@ -1,46 +1,35 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-import type { Context, Hono } from "hono";
+import type { Context, Hono } from 'hono';
 
-export const isPathInsideDirectory = ({
-  rootPath,
-  targetPath,
-}: {
-  rootPath: string;
-  targetPath: string;
-}) => {
+export const isPathInsideDirectory = ({ rootPath, targetPath }: { rootPath: string; targetPath: string }) => {
   const relativePath = path.relative(rootPath, targetPath);
 
-  return (
-    relativePath.length > 0 &&
-    !relativePath.startsWith("..") &&
-    !path.isAbsolute(relativePath)
-  );
+  return relativePath.length > 0 && !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
 };
 
-export const isAssetLikeRequestPath = (requestPath: string) =>
-  path.extname(requestPath) !== "";
+export const isAssetLikeRequestPath = (requestPath: string) => path.extname(requestPath) !== '';
 
 type StaticFileReadResult =
   | {
-      status: "ready";
+      status: 'ready';
       content: Buffer;
       contentType: string;
     }
   | {
-      status: "missing";
+      status: 'missing';
     }
   | {
-      status: "invalid_path";
+      status: 'invalid_path';
     }
   | {
-      status: "unreadable";
+      status: 'unreadable';
     };
 
 const readStaticFile = ({
   relativePath,
-  webDistDir,
+  webDistDir
 }: {
   relativePath: string;
   webDistDir: string;
@@ -51,129 +40,111 @@ const readStaticFile = ({
   if (
     !isPathInsideDirectory({
       rootPath: normalizedWebDistDir,
-      targetPath: resolvedPath,
+      targetPath: resolvedPath
     })
   ) {
     return {
-      status: "invalid_path",
+      status: 'invalid_path'
     };
   }
 
   try {
     if (!fs.existsSync(resolvedPath)) {
       return {
-        status: "missing",
+        status: 'missing'
       };
     }
 
     if (!fs.statSync(resolvedPath).isFile()) {
       return {
-        status: "missing",
+        status: 'missing'
       };
     }
   } catch {
     return {
-      status: "unreadable",
+      status: 'unreadable'
     };
   }
 
   const extension = path.extname(resolvedPath);
   const contentType =
-    extension === ".js"
-      ? "text/javascript; charset=utf-8"
-      : extension === ".css"
-        ? "text/css; charset=utf-8"
-        : extension === ".svg"
-          ? "image/svg+xml"
-          : extension === ".png"
-            ? "image/png"
-            : extension === ".ico"
-              ? "image/x-icon"
-              : extension === ".html"
-                ? "text/html; charset=utf-8"
-                : "application/octet-stream";
+    extension === '.js'
+      ? 'text/javascript; charset=utf-8'
+      : extension === '.css'
+        ? 'text/css; charset=utf-8'
+        : extension === '.svg'
+          ? 'image/svg+xml'
+          : extension === '.png'
+            ? 'image/png'
+            : extension === '.ico'
+              ? 'image/x-icon'
+              : extension === '.html'
+                ? 'text/html; charset=utf-8'
+                : 'application/octet-stream';
 
   try {
     return {
-      status: "ready",
+      status: 'ready',
       content: fs.readFileSync(resolvedPath),
-      contentType,
+      contentType
     };
   } catch {
     return {
-      status: "unreadable",
+      status: 'unreadable'
     };
   }
 };
 
-const serveIndex = ({
-  context,
-  webDistDir,
-}: {
-  context: Context;
-  webDistDir: string;
-}) => {
-  const indexPath = path.join(webDistDir, "index.html");
+const serveIndex = ({ context, webDistDir }: { context: Context; webDistDir: string }) => {
+  const indexPath = path.join(webDistDir, 'index.html');
 
   try {
     if (!fs.existsSync(indexPath)) {
-      return context.text(
-        "Hermes Console web assets are missing. Run `pnpm build` before `pnpm start`.",
-        503,
-      );
+      return context.text('Hermes Console web assets are missing. Run `pnpm build` before `pnpm start`.', 503);
     }
 
     if (!fs.statSync(indexPath).isFile()) {
-      return context.text("Hermes Console web assets could not be read.", 500);
+      return context.text('Hermes Console web assets could not be read.', 500);
     }
 
-    return context.html(fs.readFileSync(indexPath, "utf8"));
+    return context.html(fs.readFileSync(indexPath, 'utf8'));
   } catch {
-    return context.text("Hermes Console web assets could not be read.", 500);
+    return context.text('Hermes Console web assets could not be read.', 500);
   }
 };
 
-export const registerStaticSite = ({
-  app,
-  webDistDir,
-}: {
-  app: Hono;
-  webDistDir: string;
-}) => {
-  app.get("*", (context) => {
-    if (context.req.path.startsWith("/api")) {
+export const registerStaticSite = ({ app, webDistDir }: { app: Hono; webDistDir: string }) => {
+  app.get('*', (context) => {
+    if (context.req.path.startsWith('/api')) {
       return context.notFound();
     }
 
     const requestPath = context.req.path;
-    const relativePath = requestPath === "/" ? "/index.html" : requestPath;
+    const relativePath = requestPath === '/' ? '/index.html' : requestPath;
     const staticFile = readStaticFile({
       relativePath,
-      webDistDir,
+      webDistDir
     });
 
-    if (staticFile.status === "ready") {
+    if (staticFile.status === 'ready') {
       return new Response(new Uint8Array(staticFile.content), {
         headers: {
-          "Content-Type": staticFile.contentType,
-        },
+          'Content-Type': staticFile.contentType
+        }
       });
     }
 
-    if (staticFile.status === "unreadable") {
-      return context.text("Hermes Console web assets could not be read.", 500);
+    if (staticFile.status === 'unreadable') {
+      return context.text('Hermes Console web assets could not be read.', 500);
     }
 
-    if (
-      staticFile.status === "invalid_path" ||
-      isAssetLikeRequestPath(requestPath)
-    ) {
+    if (staticFile.status === 'invalid_path' || isAssetLikeRequestPath(requestPath)) {
       return context.notFound();
     }
 
     return serveIndex({
       context,
-      webDistDir,
+      webDistDir
     });
   });
 };

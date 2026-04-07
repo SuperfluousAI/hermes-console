@@ -1,12 +1,12 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import type { InventoryInstallationStatus } from "../inventory/discovery.js";
-import { inventoryInstallationStatusSchema } from "../inventory/discovery.js";
-import type { MemoryPressureLevel } from "../memory/types.js";
-import { memoryPressureLevelSchema } from "../memory/types.js";
+import type { InventoryInstallationStatus } from '../inventory/discovery.js';
+import { inventoryInstallationStatusSchema } from '../inventory/discovery.js';
+import type { MemoryPressureLevel } from '../memory/types.js';
+import { memoryPressureLevelSchema } from '../memory/types.js';
 
 export type GatewaySummary = {
-  state: "running" | "stopped" | "unknown";
+  state: 'running' | 'stopped' | 'unknown';
   updatedAt: string | null;
   connectedPlatforms: string[];
   platformStates: Record<string, string>;
@@ -22,7 +22,7 @@ export type ChannelDirectorySummary = {
 export type UpdateStatusSummary = {
   checkedAt: string | null;
   behind: number | null;
-  status: "up_to_date" | "behind" | "unknown";
+  status: 'up_to_date' | 'behind' | 'unknown';
 };
 
 export type ConfigPostureSummary = {
@@ -41,12 +41,22 @@ export type ConfigPostureSummary = {
   configuredPlatforms: string[];
 };
 
-export type ParsedStatusEntryState = "configured" | "not_configured" | "logged_in" | "not_logged_in" | "running" | "not_running" | "present" | "missing" | "warning" | "unknown";
+export type ParsedStatusEntryState =
+  | 'configured'
+  | 'not_configured'
+  | 'logged_in'
+  | 'not_logged_in'
+  | 'running'
+  | 'not_running'
+  | 'present'
+  | 'missing'
+  | 'warning'
+  | 'unknown';
 
 export type StatusEntry = {
   name: string;
   state: ParsedStatusEntryState;
-  symbol: "ok" | "error" | "warn" | "unknown";
+  symbol: 'ok' | 'error' | 'warn' | 'unknown';
   detail: string | null;
 };
 
@@ -71,13 +81,13 @@ export type DoctorSnapshotSummary = {
 
 export type OverviewWarning = {
   id: string;
-  tone: "critical" | "warning" | "info";
+  tone: 'critical' | 'warning' | 'info';
   title: string;
   detail: string;
 };
 
 export type OverviewVerdict = {
-  status: "solid" | "needs_attention" | "broken";
+  status: 'solid' | 'needs_attention' | 'broken';
   label: string;
   summary: string;
 };
@@ -86,7 +96,7 @@ export type RuntimeHealthItem = {
   label: string;
   value: string;
   detail: string;
-  tone: "healthy" | "warning" | "critical" | "default";
+  tone: 'healthy' | 'warning' | 'critical' | 'default';
 };
 
 export type PlatformSurfaceSummary = {
@@ -99,7 +109,7 @@ export type PlatformSurfaceSummary = {
 
 export type AccessCheckSummary = {
   name: string;
-  status: "available" | "missing" | "warning" | "unknown";
+  status: 'available' | 'missing' | 'warning' | 'unknown';
   detail: string;
 };
 
@@ -130,33 +140,33 @@ export type RuntimeOverviewSummary = {
   installStatus: InventoryInstallationStatus;
   availableAgentCount: number;
   totalAgentCount: number;
-  gatewayState: GatewaySummary["state"];
+  gatewayState: GatewaySummary['state'];
   gatewayUpdatedAt: string | null;
   connectedPlatforms: string[];
   configuredPlatforms: string[];
   configuredPlatformCount: number;
   updateBehind: number | null;
-  updateStatus: UpdateStatusSummary["status"];
+  updateStatus: UpdateStatusSummary['status'];
   doctorIssueCount: number;
 };
 
 export type ShellStatusSummary = {
   capturedAt: string | null;
   rootPath: string;
-  rootKind: "default" | "env_override";
+  rootKind: 'default' | 'env_override';
   installStatus: InventoryInstallationStatus;
-  gatewayState: GatewaySummary["state"];
-  updateStatus: UpdateStatusSummary["status"];
+  gatewayState: GatewaySummary['state'];
+  updateStatus: UpdateStatusSummary['status'];
   updateBehind: number | null;
   connectedPlatforms: string[];
   connectedPlatformCount: number;
 };
 
 export const gatewaySummarySchema = z.object({
-  state: z.enum(["running", "stopped", "unknown"]),
+  state: z.enum(['running', 'stopped', 'unknown']),
   updatedAt: z.string().nullable(),
   connectedPlatforms: z.array(z.string()),
-  platformStates: z.record(z.string(), z.string()),
+  platformStates: z.record(z.string(), z.string())
 });
 
 export const channelDirectorySummarySchema = z.object({
@@ -167,15 +177,15 @@ export const channelDirectorySummarySchema = z.object({
     z.string(),
     z.object({
       total: z.number(),
-      threads: z.number(),
-    }),
-  ),
+      threads: z.number()
+    })
+  )
 });
 
 export const updateStatusSummarySchema = z.object({
   checkedAt: z.string().nullable(),
   behind: z.number().nullable(),
-  status: z.enum(["up_to_date", "behind", "unknown"]),
+  status: z.enum(['up_to_date', 'behind', 'unknown'])
 });
 
 export const configPostureSummarySchema = z.object({
@@ -191,27 +201,27 @@ export const configPostureSummarySchema = z.object({
   tirithEnabled: z.boolean().nullable(),
   discordRequireMention: z.boolean().nullable(),
   discordAutoThread: z.boolean().nullable(),
-  configuredPlatforms: z.array(z.string()),
+  configuredPlatforms: z.array(z.string())
 });
 
 export const parsedStatusEntryStateSchema = z.enum([
-  "configured",
-  "not_configured",
-  "logged_in",
-  "not_logged_in",
-  "running",
-  "not_running",
-  "present",
-  "missing",
-  "warning",
-  "unknown",
+  'configured',
+  'not_configured',
+  'logged_in',
+  'not_logged_in',
+  'running',
+  'not_running',
+  'present',
+  'missing',
+  'warning',
+  'unknown'
 ]);
 
 export const statusEntrySchema = z.object({
   name: z.string(),
   state: parsedStatusEntryStateSchema,
-  symbol: z.enum(["ok", "error", "warn", "unknown"]),
-  detail: z.string().nullable(),
+  symbol: z.enum(['ok', 'error', 'warn', 'unknown']),
+  detail: z.string().nullable()
 });
 
 export const statusSnapshotSummarySchema = z.object({
@@ -223,11 +233,11 @@ export const statusSnapshotSummarySchema = z.object({
   gatewayStatus: statusEntrySchema.nullable(),
   scheduledJobs: z.object({
     active: z.number().nullable(),
-    total: z.number().nullable(),
+    total: z.number().nullable()
   }),
   sessions: z.object({
-    active: z.number().nullable(),
-  }),
+    active: z.number().nullable()
+  })
 });
 
 export const doctorSnapshotSummarySchema = z.object({
@@ -235,27 +245,27 @@ export const doctorSnapshotSummarySchema = z.object({
   issueCount: z.number(),
   issues: z.array(z.string()),
   toolWarnings: z.array(z.string()),
-  authProviders: z.array(statusEntrySchema),
+  authProviders: z.array(statusEntrySchema)
 });
 
 export const overviewWarningSchema = z.object({
   id: z.string(),
-  tone: z.enum(["critical", "warning", "info"]),
+  tone: z.enum(['critical', 'warning', 'info']),
   title: z.string(),
-  detail: z.string(),
+  detail: z.string()
 });
 
 export const overviewVerdictSchema = z.object({
-  status: z.enum(["solid", "needs_attention", "broken"]),
+  status: z.enum(['solid', 'needs_attention', 'broken']),
   label: z.string(),
-  summary: z.string(),
+  summary: z.string()
 });
 
 export const runtimeHealthItemSchema = z.object({
   label: z.string(),
   value: z.string(),
   detail: z.string(),
-  tone: z.enum(["healthy", "warning", "critical", "default"]),
+  tone: z.enum(['healthy', 'warning', 'critical', 'default'])
 });
 
 export const platformSurfaceSummarySchema = z.object({
@@ -263,19 +273,19 @@ export const platformSurfaceSummarySchema = z.object({
   configured: z.boolean(),
   live: z.boolean().nullable(),
   detail: z.string(),
-  defaults: z.array(z.string()),
+  defaults: z.array(z.string())
 });
 
 export const accessCheckSummarySchema = z.object({
   name: z.string(),
-  status: z.enum(["available", "missing", "warning", "unknown"]),
-  detail: z.string(),
+  status: z.enum(['available', 'missing', 'warning', 'unknown']),
+  detail: z.string()
 });
 
 export const runtimeProfileItemSchema = z.object({
   label: z.string(),
   value: z.string(),
-  detail: z.string(),
+  detail: z.string()
 });
 
 export const runtimeOverviewSummarySchema = z.object({
@@ -286,7 +296,7 @@ export const runtimeOverviewSummarySchema = z.object({
   platforms: z.array(platformSurfaceSummarySchema),
   access: z.object({
     authProviders: z.array(accessCheckSummarySchema),
-    apiKeys: z.array(accessCheckSummarySchema),
+    apiKeys: z.array(accessCheckSummarySchema)
   }),
   runtimeProfile: z.array(runtimeProfileItemSchema),
   activity: z.object({
@@ -294,7 +304,7 @@ export const runtimeOverviewSummarySchema = z.object({
     cronAttentionJobs: z.number(),
     overdueCronJobs: z.number(),
     contentfulCronJobs: z.number(),
-    memoryPressure: memoryPressureLevelSchema,
+    memoryPressure: memoryPressureLevelSchema
   }),
   installStatus: inventoryInstallationStatusSchema,
   availableAgentCount: z.number(),
@@ -306,16 +316,16 @@ export const runtimeOverviewSummarySchema = z.object({
   configuredPlatformCount: z.number(),
   updateBehind: z.number().nullable(),
   updateStatus: updateStatusSummarySchema.shape.status,
-  doctorIssueCount: z.number(),
+  doctorIssueCount: z.number()
 });
 
 export const shellStatusSummarySchema = z.object({
   capturedAt: z.string().nullable(),
   rootPath: z.string(),
-  rootKind: z.enum(["default", "env_override"]),
+  rootKind: z.enum(['default', 'env_override']),
   installStatus: inventoryInstallationStatusSchema,
   gatewayState: gatewaySummarySchema.shape.state,
   updateStatus: updateStatusSummarySchema.shape.status,
   updateBehind: z.number().nullable(),
-  connectedPlatformCount: z.number(),
+  connectedPlatformCount: z.number()
 });

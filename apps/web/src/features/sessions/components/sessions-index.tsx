@@ -1,4 +1,4 @@
-import type { HermesSessionSummary } from "@hermes-console/runtime";
+import type { HermesSessionSummary } from '@hermes-console/runtime';
 
 function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
@@ -14,9 +14,9 @@ function formatCost(value: number | null) {
   }
 
   return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 4,
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 4
   }).format(value);
 }
 
@@ -38,9 +38,7 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
           <h3 className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">
             Recent sessions
           </h3>
-          <p className="mt-2 text-sm leading-6 text-fg-muted">
-            Sessions across all detected agents.
-          </p>
+          <p className="mt-2 text-sm leading-6 text-fg-muted">Sessions across all detected agents.</p>
         </div>
       </div>
 
@@ -48,14 +46,10 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
         {sessions.map((session) => {
           const formattedCost = formatCost(session.estimatedCostUsd);
           const stateOnly = session.hasStateTranscript && !session.hasMessagingMetadata;
-          const messagingOnly =
-            !session.hasStateTranscript && session.hasMessagingMetadata;
+          const messagingOnly = !session.hasStateTranscript && session.hasMessagingMetadata;
 
           return (
-            <article
-              key={session.id}
-              className="rounded-md border border-border/70 bg-bg/40 p-3"
-            >
+            <article key={session.id} className="rounded-md border border-border/70 bg-bg/40 p-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -78,7 +72,7 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
                     ) : null}
                   </div>
                   <p className="mt-2 truncate text-sm leading-6 text-fg-muted">
-                    {session.displayName ?? session.cronJobName ?? "—"}
+                    {session.displayName ?? session.cronJobName ?? '—'}
                   </p>
                   <p className="mt-1 font-mono text-[11px] text-fg-faint">{session.sessionId}</p>
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-fg-muted">
@@ -87,8 +81,12 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
                     <span>{formatCount(session.totalTokens)} tokens</span>
                     {session.model ? <span>{session.model}</span> : null}
                     {formattedCost ? <span>{formattedCost}</span> : null}
-                    {session.memoryFlushed != null ? <span>{session.memoryFlushed ? "memory flushed" : "memory live"}</span> : null}
-                    {session.endedAt ? <span>ended: {session.endedAt ? new Date(session.endedAt).toLocaleString() : "—"}</span> : null}
+                    {session.memoryFlushed != null ? (
+                      <span>{session.memoryFlushed ? 'memory flushed' : 'memory live'}</span>
+                    ) : null}
+                    {session.endedAt ? (
+                      <span>ended: {session.endedAt ? new Date(session.endedAt).toLocaleString() : '—'}</span>
+                    ) : null}
                   </div>
                 </div>
 

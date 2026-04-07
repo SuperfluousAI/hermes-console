@@ -1,25 +1,22 @@
-import fs from "node:fs";
-import path from "node:path";
-import { execFileSync } from "node:child_process";
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
-import { ZodError, z } from "zod";
+import { ZodError, z } from 'zod';
 import {
   createMissingDependencyIssue,
   createParseFailedIssue,
-  createUnreadablePathIssue,
-} from "@/lib/query-issue-factories";
-import { createReadResult, type ReadResult } from "@/lib/read-result";
+  createUnreadablePathIssue
+} from '@/lib/query-issue-factories';
+import { createReadResult, type ReadResult } from '@/lib/read-result';
 import type {
   AgentSessionMessageRecord,
   AgentStateSessionRecord,
   HermesQueryIssue,
-  MessagingSessionRecord,
-} from "@hermes-console/runtime";
-import {
-  agentSessionMessageRecordSchema,
-  agentStateSessionRecordSchema,
-} from "@hermes-console/runtime";
-import { parseMessagingSessionIndex } from "@/features/sessions/read-sessions";
+  MessagingSessionRecord
+} from '@hermes-console/runtime';
+import { agentSessionMessageRecordSchema, agentStateSessionRecordSchema } from '@hermes-console/runtime';
+import { parseMessagingSessionIndex } from '@/features/sessions/read-sessions';
 
 const SQLITE_SCRIPT = String.raw`
 import json
@@ -137,12 +134,11 @@ function formatValidationErrorSummary(error: ZodError): string {
   const firstIssue = error.issues[0];
 
   if (!firstIssue) {
-    return "row had an invalid shape";
+    return 'row had an invalid shape';
   }
 
-  const fieldPath =
-    firstIssue.path.length > 0 ? firstIssue.path.join(".") : "value";
-  const message = firstIssue.message.replace(/^Invalid input:\s*/i, "");
+  const fieldPath = firstIssue.path.length > 0 ? firstIssue.path.join('.') : 'value';
+  const message = firstIssue.message.replace(/^Invalid input:\s*/i, '');
 
   return `${fieldPath} ${message}`;
 }
@@ -152,19 +148,19 @@ function createDroppedRowsIssue({
   droppedCount,
   mode,
   rowLabel,
-  validationError,
+  validationError
 }: {
   dbPath: string;
   droppedCount: number;
-  mode: "sessions" | "messages";
-  rowLabel: "session row" | "message row";
+  mode: 'sessions' | 'messages';
+  rowLabel: 'session row' | 'message row';
   validationError: ZodError;
 }): HermesQueryIssue {
   return createParseFailedIssue({
     id: `sessions-${mode}-invalid-rows`,
-    summary: `Dropped invalid ${rowLabel}${droppedCount === 1 ? "" : "s"}`,
-    detail: `Dropped ${droppedCount} invalid ${rowLabel}${droppedCount === 1 ? "" : "s"}. First error: ${formatValidationErrorSummary(validationError)}.`,
-    path: dbPath,
+    summary: `Dropped invalid ${rowLabel}${droppedCount === 1 ? '' : 's'}`,
+    detail: `Dropped ${droppedCount} invalid ${rowLabel}${droppedCount === 1 ? '' : 's'}. First error: ${formatValidationErrorSummary(validationError)}.`,
+    path: dbPath
   });
 }
 
@@ -173,24 +169,24 @@ function runSqliteJsonRowsQuery<T>({
   mode,
   rowLabel,
   rowSchema,
-  sessionId,
+  sessionId
 }: {
   dbPath: string;
-  mode: "sessions" | "messages";
-  rowLabel: "session row" | "message row";
+  mode: 'sessions' | 'messages';
+  rowLabel: 'session row' | 'message row';
   rowSchema: z.ZodType<T>;
   sessionId?: string;
 }): ReadResult<T[]> {
   try {
-    const args = ["-c", SQLITE_SCRIPT, dbPath, mode];
+    const args = ['-c', SQLITE_SCRIPT, dbPath, mode];
 
-    if (mode === "messages" && sessionId) {
+    if (mode === 'messages' && sessionId) {
       args.push(sessionId);
     }
 
-    const output = execFileSync("python3", args, {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
+    const output = execFileSync('python3', args, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
     });
 
     const parsed = JSON.parse(output) as unknown;
@@ -201,12 +197,11 @@ function runSqliteJsonRowsQuery<T>({
         issues: [
           createParseFailedIssue({
             id: `sessions-${mode}-invalid-json-shape`,
-            summary: "Session database output had an unexpected shape",
-            detail:
-              "Hermes Console expected the SQLite bridge to return a JSON array.",
-            path: dbPath,
-          }),
-        ],
+            summary: 'Session database output had an unexpected shape',
+            detail: 'Hermes Console expected the SQLite bridge to return a JSON array.',
+            path: dbPath
+          })
+        ]
       });
     }
 
@@ -237,75 +232,67 @@ function runSqliteJsonRowsQuery<T>({
           droppedCount,
           mode,
           rowLabel,
-          validationError: firstValidationError,
-        }),
+          validationError: firstValidationError
+        })
       );
     }
 
     return createReadResult({
       data: validRows,
-      issues,
+      issues
     });
   } catch (error) {
     const issue =
       error instanceof SyntaxError || error instanceof ZodError
         ? createParseFailedIssue({
             id: `sessions-${mode}-json-parse-failed`,
-            summary: "Session database output could not be parsed",
-            detail:
-              error.message ||
-              "Hermes Console could not parse JSON returned from the SQLite bridge.",
-            path: dbPath,
+            summary: 'Session database output could not be parsed',
+            detail: error.message || 'Hermes Console could not parse JSON returned from the SQLite bridge.',
+            path: dbPath
           })
-        : error &&
-            typeof error === "object" &&
-            "code" in error &&
-            error.code === "ENOENT"
+        : error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT'
           ? createMissingDependencyIssue({
               id: `sessions-${mode}-sqlite-bridge-missing`,
-              summary: "Python runtime is unavailable",
-              detail:
-                "Hermes Console could not run the Python SQLite bridge needed to inspect session databases.",
-              path: "python3",
+              summary: 'Python runtime is unavailable',
+              detail: 'Hermes Console could not run the Python SQLite bridge needed to inspect session databases.',
+              path: 'python3'
             })
           : createUnreadablePathIssue({
               id: `sessions-${mode}-sqlite-read-failed`,
-              summary: "Session database could not be read",
+              summary: 'Session database could not be read',
               detail:
                 error instanceof Error
                   ? error.message
-                  : "Hermes Console could not read the SQLite-backed session database.",
-              path: dbPath,
+                  : 'Hermes Console could not read the SQLite-backed session database.',
+              path: dbPath
             });
 
     return createReadResult({
       data: [],
-      issues: [issue],
+      issues: [issue]
     });
   }
 }
 
-export function readStateDbSessionsResult(
-  agentRootPath: string,
-): ReadResult<AgentStateSessionRecord[]> {
-  const dbPath = path.join(agentRootPath, "state.db");
+export function readStateDbSessionsResult(agentRootPath: string): ReadResult<AgentStateSessionRecord[]> {
+  const dbPath = path.join(agentRootPath, 'state.db');
 
   if (!fs.existsSync(dbPath)) {
     return createReadResult({
-      data: [],
+      data: []
     });
   }
 
   const result = runSqliteJsonRowsQuery<AgentStateSessionRecord>({
     dbPath,
-    mode: "sessions",
-    rowLabel: "session row",
-    rowSchema: agentStateSessionRecordSchema,
+    mode: 'sessions',
+    rowLabel: 'session row',
+    rowSchema: agentStateSessionRecordSchema
   });
 
   return createReadResult({
     data: result.data,
-    issues: result.issues,
+    issues: result.issues
   });
 }
 
@@ -315,81 +302,72 @@ export function readStateDbSessions(agentRootPath: string): AgentStateSessionRec
 
 export function readStateDbMessagesResult({
   agentRootPath,
-  sessionId,
+  sessionId
 }: {
   agentRootPath: string;
   sessionId: string;
 }): ReadResult<AgentSessionMessageRecord[]> {
-  const dbPath = path.join(agentRootPath, "state.db");
+  const dbPath = path.join(agentRootPath, 'state.db');
 
   if (!fs.existsSync(dbPath)) {
     return createReadResult({
-      data: [],
+      data: []
     });
   }
 
   return runSqliteJsonRowsQuery<AgentSessionMessageRecord>({
     dbPath,
-    mode: "messages",
-    rowLabel: "message row",
+    mode: 'messages',
+    rowLabel: 'message row',
     rowSchema: agentSessionMessageRecordSchema,
-    sessionId,
+    sessionId
   });
 }
 
 export function readStateDbMessages({
   agentRootPath,
-  sessionId,
+  sessionId
 }: {
   agentRootPath: string;
   sessionId: string;
 }): AgentSessionMessageRecord[] {
   return readStateDbMessagesResult({
     agentRootPath,
-    sessionId,
+    sessionId
   }).data;
 }
 
-export function readMessagingSessionsResult(
-  agentRootPath: string,
-): ReadResult<MessagingSessionRecord[]> {
-  const sessionsPath = path.join(agentRootPath, "sessions", "sessions.json");
+export function readMessagingSessionsResult(agentRootPath: string): ReadResult<MessagingSessionRecord[]> {
+  const sessionsPath = path.join(agentRootPath, 'sessions', 'sessions.json');
 
   if (!fs.existsSync(sessionsPath)) {
     return createReadResult({
-      data: [],
+      data: []
     });
   }
 
   try {
     return createReadResult({
-      data: parseMessagingSessionIndex(fs.readFileSync(sessionsPath, "utf8")),
+      data: parseMessagingSessionIndex(fs.readFileSync(sessionsPath, 'utf8'))
     });
   } catch (error) {
     const issueFactory =
-      error instanceof SyntaxError || error instanceof ZodError
-        ? createParseFailedIssue
-        : createUnreadablePathIssue;
+      error instanceof SyntaxError || error instanceof ZodError ? createParseFailedIssue : createUnreadablePathIssue;
 
     return createReadResult({
       data: [],
       issues: [
         issueFactory({
-          id: "sessions-messaging-index-failed",
-          summary: "Messaging session index could not be read",
-          detail:
-            error instanceof Error
-              ? error.message
-              : "Hermes Console could not read the messaging session index.",
-          path: sessionsPath,
-        }),
-      ],
+          id: 'sessions-messaging-index-failed',
+          summary: 'Messaging session index could not be read',
+          detail: error instanceof Error ? error.message : 'Hermes Console could not read the messaging session index.',
+          path: sessionsPath
+        })
+      ]
     });
   }
 }
 
-export function readMessagingSessions(
-  agentRootPath: string,
-): MessagingSessionRecord[] {
+export function readMessagingSessions(agentRootPath: string): MessagingSessionRecord[] {
   return readMessagingSessionsResult(agentRootPath).data;
 }

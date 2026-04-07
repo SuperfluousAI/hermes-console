@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions } from '@tanstack/react-query';
 import {
   appMetaSchema,
   createSnapshotEnvelopeSchema,
@@ -19,9 +19,9 @@ import {
   type DiagnosticsResponse,
   type KeyFileContentData,
   type KeyFilesData,
-  type SnapshotEnvelope,
-} from "@hermes-console/runtime";
-import { z } from "zod";
+  type SnapshotEnvelope
+} from '@hermes-console/runtime';
+import { z } from 'zod';
 
 const readErrorMessage = async (response: Response): Promise<string> => {
   try {
@@ -35,7 +35,7 @@ const readErrorMessage = async (response: Response): Promise<string> => {
 const fetchJson = async <T>({
   init,
   path,
-  schema,
+  schema
 }: {
   init?: RequestInit;
   path: string;
@@ -43,9 +43,9 @@ const fetchJson = async <T>({
 }): Promise<T> => {
   const response = await fetch(path, {
     headers: {
-      Accept: "application/json",
+      Accept: 'application/json'
     },
-    ...init,
+    ...init
   });
 
   if (!response.ok) {
@@ -57,32 +57,31 @@ const fetchJson = async <T>({
 
 const fetchSnapshot = async <T>({
   dataSchema,
-  path,
+  path
 }: {
   dataSchema: z.ZodType<T>;
   path: string;
 }): Promise<SnapshotEnvelope<T>> =>
   fetchJson({
     path,
-    schema: createSnapshotEnvelopeSchema(dataSchema),
+    schema: createSnapshotEnvelopeSchema(dataSchema)
   });
 
 export const apiQueryKeys = {
-  appMeta: ["app-meta"] as const,
-  cron: ["cron"] as const,
-  cronDetail: (agentId: string, jobId: string) => ["cron-detail", agentId, jobId] as const,
-  diagnostics: ["diagnostics"] as const,
-  files: ["files"] as const,
-  inventory: ["inventory"] as const,
-  memory: ["memory"] as const,
-  overview: ["overview"] as const,
-  sessions: ["sessions"] as const,
-  fileContent: (fileId: string) => ["file-content", fileId] as const,
-  skillDetail: (skillId: string) => ["skill-detail", skillId] as const,
-  skillLinkedFileContent: (skillId: string, fileId: string) =>
-    ["skill-linked-file-content", skillId, fileId] as const,
-  skills: ["skills"] as const,
-  usage: ["usage"] as const,
+  appMeta: ['app-meta'] as const,
+  cron: ['cron'] as const,
+  cronDetail: (agentId: string, jobId: string) => ['cron-detail', agentId, jobId] as const,
+  diagnostics: ['diagnostics'] as const,
+  files: ['files'] as const,
+  inventory: ['inventory'] as const,
+  memory: ['memory'] as const,
+  overview: ['overview'] as const,
+  sessions: ['sessions'] as const,
+  fileContent: (fileId: string) => ['file-content', fileId] as const,
+  skillDetail: (skillId: string) => ['skill-detail', skillId] as const,
+  skillLinkedFileContent: (skillId: string, fileId: string) => ['skill-linked-file-content', skillId, fileId] as const,
+  skills: ['skills'] as const,
+  usage: ['usage'] as const
 };
 
 export const appMetaQueryOptions = () =>
@@ -90,9 +89,9 @@ export const appMetaQueryOptions = () =>
     queryKey: apiQueryKeys.appMeta,
     queryFn: () =>
       fetchJson<AppMeta>({
-        path: "/api/meta/app",
-        schema: appMetaSchema,
-      }),
+        path: '/api/meta/app',
+        schema: appMetaSchema
+      })
   });
 
 export const overviewQueryOptions = () =>
@@ -101,8 +100,8 @@ export const overviewQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: runtimeOverviewSummarySchema,
-        path: "/api/runtime/overview",
-      }),
+        path: '/api/runtime/overview'
+      })
   });
 
 export const diagnosticsQueryOptions = () =>
@@ -110,9 +109,9 @@ export const diagnosticsQueryOptions = () =>
     queryKey: apiQueryKeys.diagnostics,
     queryFn: () =>
       fetchJson<DiagnosticsResponse>({
-        path: "/api/runtime/diagnostics",
-        schema: diagnosticsResponseSchema,
-      }),
+        path: '/api/runtime/diagnostics',
+        schema: diagnosticsResponseSchema
+      })
   });
 
 export const inventoryQueryOptions = () =>
@@ -121,8 +120,8 @@ export const inventoryQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: inventoryInstallationSchema,
-        path: "/api/inventory",
-      }),
+        path: '/api/inventory'
+      })
   });
 
 export const memoryQueryOptions = () =>
@@ -131,8 +130,8 @@ export const memoryQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: memoryReadResultSchema,
-        path: "/api/memory",
-      }),
+        path: '/api/memory'
+      })
   });
 
 export const sessionsQueryOptions = () =>
@@ -141,8 +140,8 @@ export const sessionsQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: hermesSessionsIndexSchema,
-        path: "/api/sessions",
-      }),
+        path: '/api/sessions'
+      })
   });
 
 export const cronQueryOptions = () =>
@@ -151,24 +150,18 @@ export const cronQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: hermesCronIndexSchema,
-        path: "/api/cron",
-      }),
+        path: '/api/cron'
+      })
   });
 
-export const cronDetailQueryOptions = ({
-  agentId,
-  jobId,
-}: {
-  agentId: string;
-  jobId: string;
-}) =>
+export const cronDetailQueryOptions = ({ agentId, jobId }: { agentId: string; jobId: string }) =>
   queryOptions({
     queryKey: apiQueryKeys.cronDetail(agentId, jobId),
     queryFn: () =>
       fetchSnapshot({
         dataSchema: hermesCronJobDetailSchema,
-        path: `/api/cron/${encodeURIComponent(agentId)}/${encodeURIComponent(jobId)}`,
-      }),
+        path: `/api/cron/${encodeURIComponent(agentId)}/${encodeURIComponent(jobId)}`
+      })
   });
 
 export const usageQueryOptions = () =>
@@ -177,8 +170,8 @@ export const usageQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: hermesUsageSummarySchema,
-        path: "/api/usage",
-      }),
+        path: '/api/usage'
+      })
   });
 
 export const skillsQueryOptions = () =>
@@ -187,38 +180,28 @@ export const skillsQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: skillsIndexResultSchema,
-        path: "/api/skills",
-      }),
+        path: '/api/skills'
+      })
   });
 
-export const skillDetailQueryOptions = ({
-  skillId,
-}: {
-  skillId: string;
-}) =>
+export const skillDetailQueryOptions = ({ skillId }: { skillId: string }) =>
   queryOptions({
     queryKey: apiQueryKeys.skillDetail(skillId),
     queryFn: () =>
       fetchSnapshot({
         dataSchema: skillDocumentDetailSchema,
-        path: `/api/skills/${encodeURIComponent(skillId)}`,
-      }),
+        path: `/api/skills/${encodeURIComponent(skillId)}`
+      })
   });
 
-export const skillLinkedFileContentQueryOptions = ({
-  fileId,
-  skillId,
-}: {
-  fileId: string;
-  skillId: string;
-}) =>
+export const skillLinkedFileContentQueryOptions = ({ fileId, skillId }: { fileId: string; skillId: string }) =>
   queryOptions({
     queryKey: apiQueryKeys.skillLinkedFileContent(skillId, fileId),
     queryFn: () =>
       fetchSnapshot({
         dataSchema: skillLinkedFileContentSchema,
-        path: `/api/skills/${encodeURIComponent(skillId)}/files/${encodeURIComponent(fileId)}`,
-      }),
+        path: `/api/skills/${encodeURIComponent(skillId)}/files/${encodeURIComponent(fileId)}`
+      })
   });
 
 export const filesQueryOptions = () =>
@@ -227,22 +210,18 @@ export const filesQueryOptions = () =>
     queryFn: () =>
       fetchSnapshot({
         dataSchema: keyFilesDataSchema,
-        path: "/api/files",
-      }),
+        path: '/api/files'
+      })
   });
 
-export const fileContentQueryOptions = ({
-  fileId,
-}: {
-  fileId: string;
-}) =>
+export const fileContentQueryOptions = ({ fileId }: { fileId: string }) =>
   queryOptions({
     queryKey: apiQueryKeys.fileContent(fileId),
     queryFn: () =>
       fetchSnapshot({
         dataSchema: keyFileContentDataSchema,
-        path: `/api/files/${encodeURIComponent(fileId)}`,
-      }),
+        path: `/api/files/${encodeURIComponent(fileId)}`
+      })
   });
 
 export type { KeyFileContentData, KeyFilesData, SnapshotEnvelope };

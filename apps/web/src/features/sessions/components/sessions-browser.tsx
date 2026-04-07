@@ -1,18 +1,18 @@
-import type { QueryKey } from "@tanstack/react-query";
-import { useDeferredValue, useMemo, useState } from "react";
+import type { QueryKey } from '@tanstack/react-query';
+import { useDeferredValue, useMemo, useState } from 'react';
 
-import { AppSelect } from "@/components/ui/app-select";
-import { RefreshButton } from "@/components/ui/refresh-button";
-import { SessionsIndex } from "@/features/sessions/components/sessions-index";
-import { SessionsSummaryGrid } from "@/features/sessions/components/sessions-summary-grid";
-import type { HermesSessionSummary } from "@hermes-console/runtime";
+import { AppSelect } from '@/components/ui/app-select';
+import { RefreshButton } from '@/components/ui/refresh-button';
+import { SessionsIndex } from '@/features/sessions/components/sessions-index';
+import { SessionsSummaryGrid } from '@/features/sessions/components/sessions-summary-grid';
+import type { HermesSessionSummary } from '@hermes-console/runtime';
 
 function filterSessions({
   sessions,
   query,
   agent,
   source,
-  platform,
+  platform
 }: {
   sessions: HermesSessionSummary[];
   query: string;
@@ -23,15 +23,15 @@ function filterSessions({
   const normalizedQuery = query.trim().toLowerCase();
 
   return sessions.filter((session) => {
-    if (agent !== "all" && session.agentId !== agent) {
+    if (agent !== 'all' && session.agentId !== agent) {
       return false;
     }
 
-    if (source !== "all" && (session.source ?? "unknown") !== source) {
+    if (source !== 'all' && (session.source ?? 'unknown') !== source) {
       return false;
     }
 
-    if (platform !== "all" && (session.platform ?? "unknown") !== platform) {
+    if (platform !== 'all' && (session.platform ?? 'unknown') !== platform) {
       return false;
     }
 
@@ -46,10 +46,10 @@ function filterSessions({
       session.source,
       session.platform,
       session.model,
-      session.sessionId,
+      session.sessionId
     ]
       .filter(Boolean)
-      .join(" ")
+      .join(' ')
       .toLowerCase()
       .includes(normalizedQuery);
   });
@@ -60,10 +60,7 @@ function uniqueValues(values: string[]) {
 }
 
 function createOptions(values: string[], allLabel: string) {
-  return [
-    { value: "all", label: allLabel },
-    ...values.map((value) => ({ value, label: value })),
-  ];
+  return [{ value: 'all', label: allLabel }, ...values.map((value) => ({ value, label: value }))];
 }
 
 function formatCount(value: number) {
@@ -73,16 +70,16 @@ function formatCount(value: number) {
 export function SessionsBrowser({
   loadedAt,
   refreshQueryKeys,
-  sessions,
+  sessions
 }: {
   loadedAt: string;
   refreshQueryKeys: QueryKey[];
   sessions: HermesSessionSummary[];
 }) {
-  const [query, setQuery] = useState("");
-  const [agent, setAgent] = useState("all");
-  const [source, setSource] = useState("all");
-  const [platform, setPlatform] = useState("all");
+  const [query, setQuery] = useState('');
+  const [agent, setAgent] = useState('all');
+  const [source, setSource] = useState('all');
+  const [platform, setPlatform] = useState('all');
   const deferredQuery = useDeferredValue(query);
 
   const filteredSessions = useMemo(
@@ -92,62 +89,56 @@ export function SessionsBrowser({
         query: deferredQuery,
         agent,
         source,
-        platform,
+        platform
       }),
-    [sessions, deferredQuery, agent, source, platform],
+    [sessions, deferredQuery, agent, source, platform]
   );
 
   const agents = uniqueValues(sessions.map((session) => session.agentId));
-  const sources = uniqueValues(sessions.map((session) => session.source ?? "unknown"));
-  const platforms = uniqueValues(sessions.map((session) => session.platform ?? "unknown"));
-  const agentOptions = createOptions(agents, "All agents");
-  const sourceOptions = createOptions(sources, "All sources");
-  const platformOptions = createOptions(platforms, "All platforms");
+  const sources = uniqueValues(sessions.map((session) => session.source ?? 'unknown'));
+  const platforms = uniqueValues(sessions.map((session) => session.platform ?? 'unknown'));
+  const agentOptions = createOptions(agents, 'All agents');
+  const sourceOptions = createOptions(sources, 'All sources');
+  const platformOptions = createOptions(platforms, 'All platforms');
 
   const summaryItems = [
     {
-      label: "visible sessions",
+      label: 'visible sessions',
       value: formatCount(filteredSessions.length),
       detail:
         filteredSessions.length === sessions.length
-          ? "All aggregated sessions across detected agents."
+          ? 'All aggregated sessions across detected agents.'
           : `Filtered from ${formatCount(sessions.length)} total sessions.`,
-      tone: "default" as const,
+      tone: 'default' as const
     },
     {
-      label: "agents",
+      label: 'agents',
       value: formatCount(new Set(filteredSessions.map((session) => session.agentId)).size),
-      detail: "Agents represented in the visible sessions.",
-      tone: "default" as const,
+      detail: 'Agents represented in the visible sessions.',
+      tone: 'default' as const
     },
     {
-      label: "transcript only",
+      label: 'transcript only',
       value: formatCount(
-        filteredSessions.filter(
-          (session) =>
-            session.hasStateTranscript && !session.hasMessagingMetadata,
-        ).length,
+        filteredSessions.filter((session) => session.hasStateTranscript && !session.hasMessagingMetadata).length
       ),
-      detail: "Sessions with transcript data but no messaging context.",
-      tone: "muted" as const,
+      detail: 'Sessions with transcript data but no messaging context.',
+      tone: 'muted' as const
     },
     {
-      label: "messaging only",
+      label: 'messaging only',
       value: formatCount(
-        filteredSessions.filter(
-          (session) =>
-            !session.hasStateTranscript && session.hasMessagingMetadata,
-        ).length,
+        filteredSessions.filter((session) => !session.hasStateTranscript && session.hasMessagingMetadata).length
       ),
-      detail: "Sessions with messaging context but no transcript-backed state.db record.",
-      tone: "muted" as const,
+      detail: 'Sessions with messaging context but no transcript-backed state.db record.',
+      tone: 'muted' as const
     },
     {
-      label: "source types",
-      value: formatCount(new Set(filteredSessions.map((session) => session.source ?? "unknown")).size),
-      detail: "Distinct session sources in the current view.",
-      tone: "default" as const,
-    },
+      label: 'source types',
+      value: formatCount(new Set(filteredSessions.map((session) => session.source ?? 'unknown')).size),
+      detail: 'Distinct session sources in the current view.',
+      tone: 'default' as const
+    }
   ];
 
   return (
@@ -172,8 +163,18 @@ export function SessionsBrowser({
             className="min-w-0 w-full rounded-md border border-border bg-surface/70 px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted"
           />
           <AppSelect value={agent} onChange={setAgent} options={agentOptions} ariaLabel="Filter sessions by agent" />
-          <AppSelect value={source} onChange={setSource} options={sourceOptions} ariaLabel="Filter sessions by source" />
-          <AppSelect value={platform} onChange={setPlatform} options={platformOptions} ariaLabel="Filter sessions by platform" />
+          <AppSelect
+            value={source}
+            onChange={setSource}
+            options={sourceOptions}
+            ariaLabel="Filter sessions by source"
+          />
+          <AppSelect
+            value={platform}
+            onChange={setPlatform}
+            options={platformOptions}
+            ariaLabel="Filter sessions by platform"
+          />
         </div>
       </section>
 

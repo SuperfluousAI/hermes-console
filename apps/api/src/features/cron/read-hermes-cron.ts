@@ -1,31 +1,35 @@
-import { readHermesInstallation } from "@/features/inventory/read-installation";
-import {
-  readCronJobsFileResult,
-  readCronOutputHistoryResult,
-} from "@/features/cron/node-cron-sources";
-import { normalizeCronJobs } from "@/features/cron/read-cron";
-import { createReadResult, type ReadResult } from "@/lib/read-result";
-import { readStateDbSessionsResult } from "@/features/sessions/node-session-sources";
-import type { AgentStateSessionRecord } from "@hermes-console/runtime";
-import type { CronAgentRef, CronObservedRunRecord, HermesCronIndex } from "@hermes-console/runtime";
-import type { HermesQueryIssue } from "@hermes-console/runtime";
+import { readHermesInstallation } from '@/features/inventory/read-installation';
+import { readCronJobsFileResult, readCronOutputHistoryResult } from '@/features/cron/node-cron-sources';
+import { normalizeCronJobs } from '@/features/cron/read-cron';
+import { createReadResult, type ReadResult } from '@/lib/read-result';
+import { readStateDbSessionsResult } from '@/features/sessions/node-session-sources';
+import type { AgentStateSessionRecord } from '@hermes-console/runtime';
+import type { CronAgentRef, CronObservedRunRecord, HermesCronIndex } from '@hermes-console/runtime';
+import type { HermesQueryIssue } from '@hermes-console/runtime';
+import { inferCronJobId } from '@/features/cron/infer-cron-job-id';
 
-function compareCronJobs(left: { nextRunAt: string | null; createdAt: string | null }, right: { nextRunAt: string | null; createdAt: string | null }) {
-  const leftTime = left.nextRunAt ? new Date(left.nextRunAt).getTime() : left.createdAt ? new Date(left.createdAt).getTime() : 0;
-  const rightTime = right.nextRunAt ? new Date(right.nextRunAt).getTime() : right.createdAt ? new Date(right.createdAt).getTime() : 0;
+function compareCronJobs(
+  left: { nextRunAt: string | null; createdAt: string | null },
+  right: { nextRunAt: string | null; createdAt: string | null }
+) {
+  const leftTime = left.nextRunAt
+    ? new Date(left.nextRunAt).getTime()
+    : left.createdAt
+      ? new Date(left.createdAt).getTime()
+      : 0;
+  const rightTime = right.nextRunAt
+    ? new Date(right.nextRunAt).getTime()
+    : right.createdAt
+      ? new Date(right.createdAt).getTime()
+      : 0;
   return leftTime - rightTime;
-}
-
-function inferCronJobId(sessionId: string) {
-  const match = sessionId.match(/^cron_([a-f0-9]+)_/i);
-  return match?.[1] ?? null;
 }
 
 function buildObservedRunsByJobId(stateSessions: AgentStateSessionRecord[]) {
   const runsByJobId = new Map<string, CronObservedRunRecord[]>();
 
   for (const session of stateSessions) {
-    if (session.source !== "cron") {
+    if (session.source !== 'cron') {
       continue;
     }
 
@@ -35,7 +39,9 @@ function buildObservedRunsByJobId(stateSessions: AgentStateSessionRecord[]) {
     }
 
     const durationMs =
-      session.endedAt != null ? Math.max(0, new Date(session.endedAt).getTime() - new Date(session.startedAt).getTime()) : null;
+      session.endedAt != null
+        ? Math.max(0, new Date(session.endedAt).getTime() - new Date(session.startedAt).getTime())
+        : null;
 
     const run: CronObservedRunRecord = {
       id: session.id,
@@ -43,7 +49,7 @@ function buildObservedRunsByJobId(stateSessions: AgentStateSessionRecord[]) {
       startedAt: session.startedAt,
       endedAt: session.endedAt,
       durationMs,
-      success: session.endReason === "cron_complete",
+      success: session.endReason === 'cron_complete'
     };
 
     const existing = runsByJobId.get(jobId) ?? [];
@@ -65,24 +71,20 @@ export function readHermesCronResult(): ReadResult<HermesCronIndex> {
         id: agent.id,
         label: agent.label,
         rootPath: agent.rootPath,
-        source: agent.source,
+        source: agent.source
       };
 
       const rawJobs = readCronJobsFileResult(agent.rootPath);
       const outputsByJobId = readCronOutputHistoryResult(agent.rootPath);
       const runsByJobId = readStateDbSessionsResult(agent.rootPath);
 
-      issues.push(
-        ...rawJobs.issues,
-        ...outputsByJobId.issues,
-        ...runsByJobId.issues,
-      );
+      issues.push(...rawJobs.issues, ...outputsByJobId.issues, ...runsByJobId.issues);
 
       return normalizeCronJobs({
         agent: agentRef,
         rawJobs: rawJobs.data,
         outputsByJobId: outputsByJobId.data,
-        runsByJobId: buildObservedRunsByJobId(runsByJobId.data),
+        runsByJobId: buildObservedRunsByJobId(runsByJobId.data)
       });
     })
     .sort(compareCronJobs);
@@ -91,12 +93,8 @@ export function readHermesCronResult(): ReadResult<HermesCronIndex> {
     data: {
       jobs,
       agentCount: installation.agents.length,
-      agentsWithCron: new Set(jobs.map((job) => job.agentId)).size,
+      agentsWithCron: new Set(jobs.map((job) => job.agentId)).size
     },
-    issues,
+    issues
   });
-}
-
-export function readHermesCron(): HermesCronIndex {
-  return readHermesCronResult().data;
 }

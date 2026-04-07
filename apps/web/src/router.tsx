@@ -4,13 +4,13 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
-  type RouterHistory,
-} from "@tanstack/react-router";
-import type { QueryClient } from "@tanstack/react-query";
+  type RouterHistory
+} from '@tanstack/react-router';
+import type { QueryClient } from '@tanstack/react-query';
 
-import { AppShell } from "@/components/app-shell/app-shell";
-import { RouteError } from "@/components/route-error";
-import { RoutePending } from "@/components/route-pending";
+import { AppShell } from '@/components/app-shell/app-shell';
+import { RouteError } from '@/components/route-error';
+import { RoutePending } from '@/components/route-pending';
 import {
   fileContentQueryOptions,
   cronDetailQueryOptions,
@@ -23,18 +23,18 @@ import {
   skillDetailQueryOptions,
   skillLinkedFileContentQueryOptions,
   skillsQueryOptions,
-  usageQueryOptions,
-} from "@/lib/api";
-import { CronDetailPage } from "@/routes/pages/cron-detail-page";
-import { CronPage } from "@/routes/pages/cron-page";
-import { FilesPage } from "@/routes/pages/files-page";
-import { HomePage } from "@/routes/pages/home-page";
-import { MemoryPage } from "@/routes/pages/memory-page";
-import { SessionsPage } from "@/routes/pages/sessions-page";
-import { SkillDetailPage } from "@/routes/pages/skill-detail-page";
-import { SkillsPage } from "@/routes/pages/skills-page";
-import { UsagePage } from "@/routes/pages/usage-page";
-import { z } from "zod";
+  usageQueryOptions
+} from '@/lib/api';
+import { CronDetailPage } from '@/routes/pages/cron-detail-page';
+import { CronPage } from '@/routes/pages/cron-page';
+import { FilesPage } from '@/routes/pages/files-page';
+import { HomePage } from '@/routes/pages/home-page';
+import { MemoryPage } from '@/routes/pages/memory-page';
+import { SessionsPage } from '@/routes/pages/sessions-page';
+import { SkillDetailPage } from '@/routes/pages/skill-detail-page';
+import { SkillsPage } from '@/routes/pages/skills-page';
+import { UsagePage } from '@/routes/pages/usage-page';
+import { z } from 'zod';
 
 type RouterContext = {
   queryClient: QueryClient;
@@ -48,44 +48,39 @@ type SkillDetailRouteLoaderData = {
   selectedLinkedFileError: string | null;
 };
 
-const readPrefetchErrorMessage = ({
-  error,
-  fallback,
-}: {
-  error: unknown;
-  fallback: string;
-}): string => (error instanceof Error ? error.message : fallback);
+const readPrefetchErrorMessage = ({ error, fallback }: { error: unknown; fallback: string }): string =>
+  error instanceof Error ? error.message : fallback;
 
 const prefetchSelectedFileContent = async ({
   fileId,
-  queryClient,
+  queryClient
 }: {
   fileId: string | null;
   queryClient: QueryClient;
 }): Promise<FilesRouteLoaderData> => {
   if (fileId == null) {
     return {
-      selectedFileError: null,
+      selectedFileError: null
     };
   }
 
   try {
     await queryClient.fetchQuery({
       ...fileContentQueryOptions({
-        fileId,
+        fileId
       }),
-      retry: false,
+      retry: false
     });
 
     return {
-      selectedFileError: null,
+      selectedFileError: null
     };
   } catch (error) {
     return {
       selectedFileError: readPrefetchErrorMessage({
         error,
-        fallback: "The selected file preview could not be loaded.",
-      }),
+        fallback: 'The selected file preview could not be loaded.'
+      })
     };
   }
 };
@@ -93,7 +88,7 @@ const prefetchSelectedFileContent = async ({
 const prefetchSelectedSkillLinkedFile = async ({
   fileId,
   queryClient,
-  skillId,
+  skillId
 }: {
   fileId: string | null;
   queryClient: QueryClient;
@@ -101,7 +96,7 @@ const prefetchSelectedSkillLinkedFile = async ({
 }): Promise<SkillDetailRouteLoaderData> => {
   if (fileId == null) {
     return {
-      selectedLinkedFileError: null,
+      selectedLinkedFileError: null
     };
   }
 
@@ -109,20 +104,20 @@ const prefetchSelectedSkillLinkedFile = async ({
     await queryClient.fetchQuery({
       ...skillLinkedFileContentQueryOptions({
         fileId,
-        skillId,
+        skillId
       }),
-      retry: false,
+      retry: false
     });
 
     return {
-      selectedLinkedFileError: null,
+      selectedLinkedFileError: null
     };
   } catch (error) {
     return {
       selectedLinkedFileError: readPrefetchErrorMessage({
         error,
-        fallback: "The selected linked skill file could not be loaded.",
-      }),
+        fallback: 'The selected linked skill file could not be loaded.'
+      })
     };
   }
 };
@@ -134,81 +129,75 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
     </AppShell>
   ),
   errorComponent: RouteError,
-  pendingComponent: RoutePending,
+  pendingComponent: RoutePending
 });
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/",
+  path: '/',
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(overviewQueryOptions()),
-      context.queryClient.ensureQueryData(inventoryQueryOptions()),
+      context.queryClient.ensureQueryData(inventoryQueryOptions())
     ]),
-  component: HomePage,
+  component: HomePage
 });
 
 const sessionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/sessions",
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData(sessionsQueryOptions()),
-  component: SessionsPage,
+  path: '/sessions',
+  loader: ({ context }) => context.queryClient.ensureQueryData(sessionsQueryOptions()),
+  component: SessionsPage
 });
 
 const cronRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/cron",
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData(cronQueryOptions()),
-  component: CronPage,
+  path: '/cron',
+  loader: ({ context }) => context.queryClient.ensureQueryData(cronQueryOptions()),
+  component: CronPage
 });
 
 const cronDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/cron/$agentId/$jobId",
+  path: '/cron/$agentId/$jobId',
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(
       cronDetailQueryOptions({
         agentId: params.agentId,
-        jobId: params.jobId,
-      }),
+        jobId: params.jobId
+      })
     ),
   component: () => {
     const params = cronDetailRoute.useParams();
 
-    return (
-      <CronDetailPage agentId={params.agentId} jobId={params.jobId} />
-    );
-  },
+    return <CronDetailPage agentId={params.agentId} jobId={params.jobId} />;
+  }
 });
 
 const usageRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/usage",
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData(usageQueryOptions()),
-  component: UsagePage,
+  path: '/usage',
+  loader: ({ context }) => context.queryClient.ensureQueryData(usageQueryOptions()),
+  component: UsagePage
 });
 
 const skillsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/skills",
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData(skillsQueryOptions()),
-  component: SkillsPage,
+  path: '/skills',
+  loader: ({ context }) => context.queryClient.ensureQueryData(skillsQueryOptions()),
+  component: SkillsPage
 });
 
 const skillDetailSearchSchema = z.object({
-  file: z.string().optional(),
+  file: z.string().optional()
 });
 
 const skillDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/skills/$skillId",
+  path: '/skills/$skillId',
   validateSearch: (search) => skillDetailSearchSchema.parse(search),
   loaderDeps: ({ search }) => ({
-    selectedFileId: search.file ?? null,
+    selectedFileId: search.file ?? null
   }),
   loader: async ({ context, deps, params }) => {
     const { skillId } = params;
@@ -216,14 +205,14 @@ const skillDetailRoute = createRoute({
     const [, loaderData] = await Promise.all([
       context.queryClient.ensureQueryData(
         skillDetailQueryOptions({
-          skillId,
-        }),
+          skillId
+        })
       ),
       prefetchSelectedSkillLinkedFile({
         fileId: deps.selectedFileId,
         queryClient: context.queryClient,
-        skillId,
-      }),
+        skillId
+      })
     ]);
 
     return loaderData;
@@ -240,35 +229,34 @@ const skillDetailRoute = createRoute({
         skillId={params.skillId}
       />
     );
-  },
+  }
 });
 
 const memoryRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/memory",
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData(memoryQueryOptions()),
-  component: MemoryPage,
+  path: '/memory',
+  loader: ({ context }) => context.queryClient.ensureQueryData(memoryQueryOptions()),
+  component: MemoryPage
 });
 
 const filesSearchSchema = z.object({
-  file: z.string().optional(),
+  file: z.string().optional()
 });
 
 const filesRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/files",
+  path: '/files',
   validateSearch: (search) => filesSearchSchema.parse(search),
   loaderDeps: ({ search }) => ({
-    selectedFileId: search.file ?? null,
+    selectedFileId: search.file ?? null
   }),
   loader: async ({ context, deps }) => {
     const [, loaderData] = await Promise.all([
       context.queryClient.ensureQueryData(filesQueryOptions()),
       prefetchSelectedFileContent({
         fileId: deps.selectedFileId,
-        queryClient: context.queryClient,
-      }),
+        queryClient: context.queryClient
+      })
     ]);
 
     return loaderData;
@@ -277,13 +265,8 @@ const filesRoute = createRoute({
     const loaderData = filesRoute.useLoaderData();
     const search = filesRoute.useSearch();
 
-    return (
-      <FilesPage
-        selectedFileError={loaderData.selectedFileError}
-        selectedFileId={search.file ?? null}
-      />
-    );
-  },
+    return <FilesPage selectedFileError={loaderData.selectedFileError} selectedFileId={search.file ?? null} />;
+  }
 });
 
 const routeTree = rootRoute.addChildren([
@@ -295,27 +278,19 @@ const routeTree = rootRoute.addChildren([
   skillsRoute,
   skillDetailRoute,
   memoryRoute,
-  filesRoute,
+  filesRoute
 ]);
 
-export const createAppRouter = ({
-  history,
-  queryClient,
-}: {
-  history?: RouterHistory;
-  queryClient: QueryClient;
-}) =>
+export const createAppRouter = ({ history, queryClient }: { history?: RouterHistory; queryClient: QueryClient }) =>
   createRouter({
     context: {
-      queryClient,
+      queryClient
     },
-    defaultPreload: "intent",
+    defaultPreload: 'intent',
     ...(history == null ? {} : { history }),
-    routeTree,
+    routeTree
   });
 
-export const AppRouterProvider = ({
-  router,
-}: {
-  router: ReturnType<typeof createAppRouter>;
-}) => <RouterProvider router={router} />;
+export const AppRouterProvider = ({ router }: { router: ReturnType<typeof createAppRouter> }) => (
+  <RouterProvider router={router} />
+);

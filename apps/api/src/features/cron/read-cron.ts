@@ -6,48 +6,40 @@ import type {
   CronObservedRunRecord,
   CronRunOutputRecord,
   HermesCronJobDetail,
-  HermesCronJobSummary,
-} from "@hermes-console/runtime";
-
-function normalizeDateString(value: string | null) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-}
+  HermesCronJobSummary
+} from '@hermes-console/runtime';
+import { normalizeDateString } from '@hermes-console/runtime';
 
 function normalizeLastStatus(value: unknown) {
-  return typeof value === "string" ? value : null;
+  return typeof value === 'string' ? value : null;
 }
 
 function resolveStatusTone({
   enabled,
   lastStatus,
-  lastError,
+  lastError
 }: {
   enabled: boolean;
   lastStatus: string | null;
   lastError: string | null;
-}): HermesCronJobSummary["statusTone"] {
-  if (lastStatus === "error" || Boolean(lastError)) {
-    return "error";
+}): HermesCronJobSummary['statusTone'] {
+  if (lastStatus === 'error' || Boolean(lastError)) {
+    return 'error';
   }
 
   if (!enabled) {
-    return "muted";
+    return 'muted';
   }
 
-  if (lastStatus === "running" || lastStatus === "pending") {
-    return "warning";
+  if (lastStatus === 'running' || lastStatus === 'pending') {
+    return 'warning';
   }
 
-  return "healthy";
+  return 'healthy';
 }
 
 function normalizePrompt(value: unknown) {
-  return typeof value === "string" ? value : "";
+  return typeof value === 'string' ? value : '';
 }
 
 function isFailureStatus(value: string | null) {
@@ -55,11 +47,13 @@ function isFailureStatus(value: string | null) {
     return false;
   }
 
-  return ["error", "failed", "failure", "cancelled", "timeout", "timed_out", "crashed"].includes(value.toLowerCase());
+  return ['error', 'failed', 'failure', 'cancelled', 'timeout', 'timed_out', 'crashed'].includes(value.toLowerCase());
 }
 
 function resolveObservedRunSummary(runs: CronObservedRunRecord[]) {
-  const sortedRuns = [...runs].sort((left, right) => new Date(right.startedAt).getTime() - new Date(left.startedAt).getTime());
+  const sortedRuns = [...runs].sort(
+    (left, right) => new Date(right.startedAt).getTime() - new Date(left.startedAt).getTime()
+  );
   const recentRuns = sortedRuns.slice(0, 5);
 
   let failureStreak = 0;
@@ -70,7 +64,9 @@ function resolveObservedRunSummary(runs: CronObservedRunRecord[]) {
     failureStreak += 1;
   }
 
-  const durations = sortedRuns.map((run) => run.durationMs).filter((value): value is number => typeof value === "number" && value >= 0);
+  const durations = sortedRuns
+    .map((run) => run.durationMs)
+    .filter((value): value is number => typeof value === 'number' && value >= 0);
   const averageDurationMs =
     durations.length > 0 ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length) : null;
 
@@ -79,7 +75,7 @@ function resolveObservedRunSummary(runs: CronObservedRunRecord[]) {
     recentFailureCount: recentRuns.filter((run) => !run.success).length,
     observedRunCount: sortedRuns.length,
     latestDurationMs: sortedRuns[0]?.durationMs ?? null,
-    averageDurationMs,
+    averageDurationMs
   };
 }
 
@@ -89,7 +85,7 @@ function resolveAttentionLevel({
   failureStreak,
   recentFailureCount,
   lastStatus,
-  lastError,
+  lastError
 }: {
   enabled: boolean;
   overdue: boolean;
@@ -97,20 +93,20 @@ function resolveAttentionLevel({
   recentFailureCount: number;
   lastStatus: string | null;
   lastError: string | null;
-}): HermesCronJobSummary["attentionLevel"] {
+}): HermesCronJobSummary['attentionLevel'] {
   if (!enabled) {
-    return "muted";
+    return 'muted';
   }
 
   if (failureStreak >= 2 || recentFailureCount >= 3) {
-    return "critical";
+    return 'critical';
   }
 
   if (overdue || recentFailureCount > 0 || isFailureStatus(lastStatus) || Boolean(lastError)) {
-    return "warning";
+    return 'warning';
   }
 
-  return "healthy";
+  return 'healthy';
 }
 
 export function normalizeCronJobs({
@@ -118,7 +114,7 @@ export function normalizeCronJobs({
   rawJobs,
   outputsByJobId,
   runsByJobId,
-  now = new Date().toISOString(),
+  now = new Date().toISOString()
 }: {
   agent: CronAgentRef;
   rawJobs: CronJobsFileSource;
@@ -151,7 +147,7 @@ export function normalizeCronJobs({
         failureStreak: observedSummary.failureStreak,
         recentFailureCount: observedSummary.recentFailureCount,
         lastStatus,
-        lastError,
+        lastError
       });
 
       return {
@@ -164,7 +160,7 @@ export function normalizeCronJobs({
         agentRootPath: agent.rootPath,
         enabled,
         state: job.state ?? null,
-        scheduleDisplay: job.schedule_display ?? schedule?.display ?? "unknown",
+        scheduleDisplay: job.schedule_display ?? schedule?.display ?? 'unknown',
         createdAt: normalizeDateString(job.created_at ?? null),
         nextRunAt: normalizeDateString(job.next_run_at ?? null),
         lastRunAt: normalizeDateString(job.last_run_at ?? null),
@@ -185,8 +181,8 @@ export function normalizeCronJobs({
         observedRunCount: observedSummary.observedRunCount,
         latestDurationMs: observedSummary.latestDurationMs,
         averageDurationMs: observedSummary.averageDurationMs,
-        latestOutputState: latestOutput?.responseState ?? "missing",
-        recentOutputCount: outputs.length,
+        latestOutputState: latestOutput?.responseState ?? 'missing',
+        recentOutputCount: outputs.length
       } satisfies HermesCronJobSummary;
     })
     .sort((left, right) => {
@@ -198,7 +194,7 @@ export function normalizeCronJobs({
 
 export function buildCronJobDetail({
   job,
-  outputs,
+  outputs
 }: {
   job: CronJobRecord | HermesCronJobSummary;
   outputs: CronRunOutputRecord[];
@@ -206,19 +202,19 @@ export function buildCronJobDetail({
   return {
     job: {
       ...(job as HermesCronJobSummary),
-      summaryId: "summaryId" in job ? job.summaryId : `${job.agentId}:${job.id}`,
+      summaryId: 'summaryId' in job ? job.summaryId : `${job.agentId}:${job.id}`,
       statusTone:
-        "statusTone" in job
+        'statusTone' in job
           ? job.statusTone
           : resolveStatusTone({ enabled: job.enabled, lastStatus: job.lastStatus, lastError: job.lastError }),
-      latestOutputState: outputs[0]?.responseState ?? "missing",
-      recentOutputCount: outputs.length,
+      latestOutputState: outputs[0]?.responseState ?? 'missing',
+      recentOutputCount: outputs.length
     },
     outputs,
     recentOutputCount: outputs.length,
-    latestOutputState: outputs[0]?.responseState ?? "missing",
-    hasOutputs: outputs.length > 0,
+    latestOutputState: outputs[0]?.responseState ?? 'missing',
+    hasOutputs: outputs.length > 0
   };
 }
 
-export type { CronJobRecord, CronObservedRunRecord, CronRunOutputRecord } from "@hermes-console/runtime";
+export type { CronJobRecord, CronObservedRunRecord, CronRunOutputRecord } from '@hermes-console/runtime';

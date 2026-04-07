@@ -92,12 +92,12 @@ Then open [http://127.0.0.1:3940](http://127.0.0.1:3940).
 
 Copy `.env.example` to `.env.local` and adjust as needed.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `HERMES_CONSOLE_HERMES_DIR` | `~/.hermes` | Hermes state root |
-| `HERMES_CONSOLE_WORKSPACE_DIR` | unset | Optional workspace root for extra high-signal file discovery |
-| `HERMES_CONSOLE_HERMES_BIN` | `hermes` | Optional Hermes CLI path override for runtime diagnostics |
-| `PORT` | `3940` | Local API port used by the API and the web dev proxy |
+| Variable                       | Default     | Description                                                  |
+| ------------------------------ | ----------- | ------------------------------------------------------------ |
+| `HERMES_CONSOLE_HERMES_DIR`    | `~/.hermes` | Hermes state root                                            |
+| `HERMES_CONSOLE_WORKSPACE_DIR` | unset       | Optional workspace root for extra high-signal file discovery |
+| `HERMES_CONSOLE_HERMES_BIN`    | `hermes`    | Optional Hermes CLI path override for runtime diagnostics    |
+| `PORT`                         | `3940`      | Local API port used by the API and the web dev proxy         |
 
 ## Development
 

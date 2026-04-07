@@ -1,4 +1,4 @@
-import type { HermesQueryIssue } from "@hermes-console/runtime";
+import type { HermesQueryIssue } from '@hermes-console/runtime';
 
 export type ReadResult<T> = {
   data: T;
@@ -7,11 +7,11 @@ export type ReadResult<T> = {
 
 export const createReadResult = <T>({
   data,
-  issues = [],
+  issues = []
 }: {
   data: T;
   issues?: HermesQueryIssue[];
 }): ReadResult<T> => ({
   data,
-  issues,
+  issues
 });

@@ -1,18 +1,18 @@
-import type { HermesQueryIssue } from "@hermes-console/runtime";
+import type { HermesQueryIssue } from '@hermes-console/runtime';
 
 const createPathIssue = ({
   code,
   detail,
   id,
   path,
-  severity = "warning",
-  summary,
+  severity = 'warning',
+  summary
 }: {
-  code: HermesQueryIssue["code"];
+  code: HermesQueryIssue['code'];
   detail: string;
   id: string;
   path: string;
-  severity?: HermesQueryIssue["severity"];
+  severity?: HermesQueryIssue['severity'];
   summary: string;
 }): HermesQueryIssue => ({
   id,
@@ -20,7 +20,7 @@ const createPathIssue = ({
   severity,
   summary,
   detail,
-  path,
+  path
 });
 
 export const createUnreadablePathIssue = ({
@@ -28,15 +28,15 @@ export const createUnreadablePathIssue = ({
   id,
   path,
   severity,
-  summary,
-}: Omit<Parameters<typeof createPathIssue>[0], "code">): HermesQueryIssue =>
+  summary
+}: Omit<Parameters<typeof createPathIssue>[0], 'code'>): HermesQueryIssue =>
   createPathIssue({
     id,
-    code: "unreadable_path",
+    code: 'unreadable_path',
     summary,
     detail,
     path,
-    severity: severity ?? "warning",
+    severity: severity ?? 'warning'
   });
 
 export const createMissingPathIssue = ({
@@ -44,15 +44,15 @@ export const createMissingPathIssue = ({
   id,
   path,
   severity,
-  summary,
-}: Omit<Parameters<typeof createPathIssue>[0], "code">): HermesQueryIssue =>
+  summary
+}: Omit<Parameters<typeof createPathIssue>[0], 'code'>): HermesQueryIssue =>
   createPathIssue({
     id,
-    code: "missing_path",
+    code: 'missing_path',
     summary,
     detail,
     path,
-    severity: severity ?? "warning",
+    severity: severity ?? 'warning'
   });
 
 export const createParseFailedIssue = ({
@@ -60,15 +60,15 @@ export const createParseFailedIssue = ({
   id,
   path,
   severity,
-  summary,
-}: Omit<Parameters<typeof createPathIssue>[0], "code">): HermesQueryIssue =>
+  summary
+}: Omit<Parameters<typeof createPathIssue>[0], 'code'>): HermesQueryIssue =>
   createPathIssue({
     id,
-    code: "parse_failed",
+    code: 'parse_failed',
     summary,
     detail,
     path,
-    severity: severity ?? "warning",
+    severity: severity ?? 'warning'
   });
 
 export const createMissingDependencyIssue = ({
@@ -76,13 +76,13 @@ export const createMissingDependencyIssue = ({
   id,
   path,
   severity,
-  summary,
-}: Omit<Parameters<typeof createPathIssue>[0], "code">): HermesQueryIssue =>
+  summary
+}: Omit<Parameters<typeof createPathIssue>[0], 'code'>): HermesQueryIssue =>
   createPathIssue({
     id,
-    code: "missing_dependency",
+    code: 'missing_dependency',
     summary,
     detail,
     path,
-    severity: severity ?? "warning",
+    severity: severity ?? 'warning'
   });

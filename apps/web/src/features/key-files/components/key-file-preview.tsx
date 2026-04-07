@@ -1,16 +1,12 @@
-import type {
-  KeyFileContentData,
-  KeyFileSummary,
-  SnapshotEnvelope,
-} from "@hermes-console/runtime";
+import type { KeyFileContentData, KeyFileSummary, SnapshotEnvelope } from '@hermes-console/runtime';
 
-import { QueryStatusCard } from "@/components/ui/query-status-card";
-import { KeyFileKindBadge } from "@/features/key-files/components/key-file-kind-badge";
-import { MemoryPressureBadge } from "@/features/memory/components/memory-pressure-badge";
-import type { MemoryReadResult } from "@hermes-console/runtime";
+import { QueryStatusCard } from '@/components/ui/query-status-card';
+import { KeyFileKindBadge } from '@/features/key-files/components/key-file-kind-badge';
+import { MemoryPressureBadge } from '@/features/memory/components/memory-pressure-badge';
+import type { MemoryReadResult } from '@hermes-console/runtime';
 
-function formatScope(scope: KeyFileSummary["scope"]) {
-  return scope === "hermes_root" ? "Hermes root" : "Workspace root";
+function formatScope(scope: KeyFileSummary['scope']) {
+  return scope === 'hermes_root' ? 'Hermes root' : 'Workspace root';
 }
 
 function formatDate(value: number) {
@@ -18,15 +14,15 @@ function formatDate(value: number) {
 }
 
 function getPressure(file: KeyFileSummary, memory: MemoryReadResult) {
-  if (file.scope !== "hermes_root") {
+  if (file.scope !== 'hermes_root') {
     return null;
   }
 
-  if (file.name === "MEMORY.md") {
+  if (file.name === 'MEMORY.md') {
     return memory.files.memory.pressureLevel;
   }
 
-  if (file.name === "USER.md") {
+  if (file.name === 'USER.md') {
     return memory.files.user.pressureLevel;
   }
 
@@ -37,7 +33,7 @@ export function KeyFilePreview({
   memory,
   selectedFile,
   selectedFileError,
-  selectedFileId,
+  selectedFileId
 }: {
   memory: MemoryReadResult;
   selectedFile: SnapshotEnvelope<KeyFileContentData> | null;
@@ -73,7 +69,7 @@ export function KeyFilePreview({
     <section className="rounded-lg border border-border bg-surface/70 p-4">
       <QueryStatusCard
         title="Selected file"
-        status={selectedFile?.meta.dataStatus ?? "ready"}
+        status={selectedFile?.meta.dataStatus ?? 'ready'}
         issues={selectedFile?.issues ?? []}
       />
       <div className="flex flex-wrap items-start justify-between gap-3">

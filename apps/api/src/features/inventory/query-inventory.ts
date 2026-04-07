@@ -1,7 +1,7 @@
-import type { InventoryInstallation } from "@/features/inventory/discover-installation";
-import { readHermesInstallationResult } from "@/features/inventory/read-installation";
-import { createHermesQueryResult } from "@hermes-console/runtime";
-import type { HermesQueryIssue, HermesQueryResult } from "@hermes-console/runtime";
+import type { InventoryInstallation } from '@/features/inventory/discover-installation';
+import { readHermesInstallationResult } from '@/features/inventory/read-installation';
+import { createHermesQueryResult } from '@hermes-console/runtime';
+import type { HermesQueryIssue, HermesQueryResult } from '@hermes-console/runtime';
 
 export const readHermesInventoryQuery = (): HermesQueryResult<InventoryInstallation> => {
   const capturedAt = new Date().toISOString();
@@ -10,13 +10,12 @@ export const readHermesInventoryQuery = (): HermesQueryResult<InventoryInstallat
 
   if (!installation.data.hermesRootExists) {
     issues.push({
-      id: "inventory-hermes-root-missing",
-      code: "missing_path",
-      severity: "error",
-      summary: "Hermes root not found",
-      detail:
-        "Hermes Console could not find the configured Hermes root while reading installation data.",
-      path: installation.data.paths.hermesRoot.path,
+      id: 'inventory-hermes-root-missing',
+      code: 'missing_path',
+      severity: 'error',
+      summary: 'Hermes root not found',
+      detail: 'Hermes Console could not find the configured Hermes root while reading installation data.',
+      path: installation.data.paths.hermesRoot.path
     });
   }
 
@@ -24,6 +23,6 @@ export const readHermesInventoryQuery = (): HermesQueryResult<InventoryInstallat
     data: installation.data,
     capturedAt,
     issues,
-    status: installation.data.status,
+    status: installation.data.status
   });
 };

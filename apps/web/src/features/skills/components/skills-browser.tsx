@@ -1,10 +1,10 @@
-import type { QueryKey } from "@tanstack/react-query";
-import { useDeferredValue, useMemo, useState } from "react";
+import type { QueryKey } from '@tanstack/react-query';
+import { useDeferredValue, useMemo, useState } from 'react';
 
-import { RefreshButton } from "@/components/ui/refresh-button";
-import { SkillsIndex } from "@/features/skills/components/skills-index";
-import { SkillsSummaryGrid } from "@/features/skills/components/skills-summary-grid";
-import type { SkillSummary } from "@hermes-console/runtime";
+import { RefreshButton } from '@/components/ui/refresh-button';
+import { SkillsIndex } from '@/features/skills/components/skills-index';
+import { SkillsSummaryGrid } from '@/features/skills/components/skills-summary-grid';
+import type { SkillSummary } from '@hermes-console/runtime';
 
 function filterSkills(skills: SkillSummary[], query: string) {
   const normalizedQuery = query.trim().toLowerCase();
@@ -14,52 +14,49 @@ function filterSkills(skills: SkillSummary[], query: string) {
   }
 
   return skills.filter((skill) =>
-    [skill.name, skill.description, skill.category, skill.slug]
-      .join(" ")
-      .toLowerCase()
-      .includes(normalizedQuery),
+    [skill.name, skill.description, skill.category, skill.slug].join(' ').toLowerCase().includes(normalizedQuery)
   );
 }
 
 export function SkillsBrowser({
   loadedAt,
   refreshQueryKeys,
-  skills,
+  skills
 }: {
   loadedAt: string;
   refreshQueryKeys: QueryKey[];
   skills: SkillSummary[];
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
   const filteredSkills = useMemo(() => filterSkills(skills, deferredQuery), [skills, deferredQuery]);
 
   const summaryItems = [
     {
-      label: "skills",
+      label: 'skills',
       value: String(filteredSkills.length),
-      detail: query ? `Filtered from ${skills.length} total skills.` : "Total installed skills.",
-      tone: "default" as const,
+      detail: query ? `Filtered from ${skills.length} total skills.` : 'Total installed skills.',
+      tone: 'default' as const
     },
     {
-      label: "categories",
+      label: 'categories',
       value: String(new Set(filteredSkills.map((skill) => skill.category)).size),
-      detail: "Skill categories in the current view.",
-      tone: "default" as const,
+      detail: 'Skill categories in the current view.',
+      tone: 'default' as const
     },
     {
-      label: "linked files",
+      label: 'linked files',
       value: String(filteredSkills.reduce((sum, skill) => sum + skill.linkedFiles.length, 0)),
-      detail: "Referenced files across visible skills.",
-      tone: "default" as const,
+      detail: 'Referenced files across visible skills.',
+      tone: 'default' as const
     },
     {
-      label: "incomplete",
-      value: String(filteredSkills.filter((skill) => skill.parseStatus === "malformed").length),
-      detail: "Skills with missing or incomplete metadata.",
-      tone: "muted" as const,
-    },
+      label: 'incomplete',
+      value: String(filteredSkills.filter((skill) => skill.parseStatus === 'malformed').length),
+      detail: 'Skills with missing or incomplete metadata.',
+      tone: 'muted' as const
+    }
   ];
 
   return (

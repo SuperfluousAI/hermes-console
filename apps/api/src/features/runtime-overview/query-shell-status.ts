@@ -1,23 +1,19 @@
-import path from "node:path";
+import path from 'node:path';
 
-import { readHermesInstallationResult } from "@/features/inventory/read-installation";
-import { resolveInventoryPathConfigFromEnv } from "@/features/inventory/resolve-path-config";
-import { createUnreadablePathIssue } from "@/lib/query-issue-factories";
-import { readTextFileResult } from "@/lib/read-text-file-result";
-import { createHermesQueryResult } from "@hermes-console/runtime";
-import type { HermesQueryIssue, HermesQueryResult } from "@hermes-console/runtime";
-import {
-  parseChannelDirectory,
-  parseGatewayState,
-  parseUpdateStatus,
-} from "@hermes-console/runtime";
-import type { ShellStatusSummary } from "@hermes-console/runtime";
+import { readHermesInstallationResult } from '@/features/inventory/read-installation';
+import { resolveInventoryPathConfigFromEnv } from '@/features/inventory/resolve-path-config';
+import { createUnreadablePathIssue } from '@/lib/query-issue-factories';
+import { readTextFileResult } from '@/lib/read-text-file-result';
+import { createHermesQueryResult } from '@hermes-console/runtime';
+import type { HermesQueryIssue, HermesQueryResult } from '@hermes-console/runtime';
+import { parseChannelDirectory, parseGatewayState, parseUpdateStatus } from '@hermes-console/runtime';
+import type { ShellStatusSummary } from '@hermes-console/runtime';
 
 const createUnreadableRuntimeIssue = ({
   detail,
   id,
   summary,
-  targetPath,
+  targetPath
 }: {
   detail: string;
   id: string;
@@ -28,7 +24,7 @@ const createUnreadableRuntimeIssue = ({
     id,
     summary,
     detail,
-    path: targetPath,
+    path: targetPath
   });
 
 export function readShellStatusQuery(): HermesQueryResult<ShellStatusSummary> {
@@ -36,69 +32,62 @@ export function readShellStatusQuery(): HermesQueryResult<ShellStatusSummary> {
   const paths = resolveInventoryPathConfigFromEnv();
   const hermesRoot = paths.hermesRoot.path;
   const installation = readHermesInstallationResult();
-  const gatewayPath = path.join(hermesRoot, "gateway_state.json");
-  const channelDirectoryPath = path.join(hermesRoot, "channel_directory.json");
-  const updatePath = path.join(hermesRoot, ".update_check");
+  const gatewayPath = path.join(hermesRoot, 'gateway_state.json');
+  const channelDirectoryPath = path.join(hermesRoot, 'channel_directory.json');
+  const updatePath = path.join(hermesRoot, '.update_check');
   const gatewayContent = readTextFileResult(gatewayPath);
   const channelDirectoryContent = readTextFileResult(channelDirectoryPath);
   const updateContent = readTextFileResult(updatePath);
 
-  const gateway = parseGatewayState(
-    gatewayContent.content ?? "",
-  );
-  const channels = parseChannelDirectory(
-    channelDirectoryContent.content ?? "",
-  );
-  const update = parseUpdateStatus(
-    updateContent.content ?? "",
-  );
+  const gateway = parseGatewayState(gatewayContent.content ?? '');
+  const channels = parseChannelDirectory(channelDirectoryContent.content ?? '');
+  const update = parseUpdateStatus(updateContent.content ?? '');
   const issues: HermesQueryIssue[] = [...installation.issues];
-  const connectedPlatforms = Array.from(
-    new Set([...gateway.connectedPlatforms, ...channels.connectedPlatforms]),
-  ).sort((left, right) => left.localeCompare(right));
+  const connectedPlatforms = Array.from(new Set([...gateway.connectedPlatforms, ...channels.connectedPlatforms])).sort(
+    (left, right) => left.localeCompare(right)
+  );
 
   if (!installation.data.hermesRootExists) {
     issues.push({
-      id: "shell-hermes-root-missing",
-      code: "missing_path",
-      severity: "error",
-      summary: "Hermes root not found",
-      detail:
-        "The configured Hermes root could not be found. Topbar status reflects a degraded local runtime.",
-      path: hermesRoot,
+      id: 'shell-hermes-root-missing',
+      code: 'missing_path',
+      severity: 'error',
+      summary: 'Hermes root not found',
+      detail: 'The configured Hermes root could not be found. Topbar status reflects a degraded local runtime.',
+      path: hermesRoot
     });
   }
 
-  if (gatewayContent.status === "unreadable") {
+  if (gatewayContent.status === 'unreadable') {
     issues.push(
       createUnreadableRuntimeIssue({
-        id: "shell-gateway-state-unreadable",
-        summary: "gateway_state.json could not be read",
+        id: 'shell-gateway-state-unreadable',
+        summary: 'gateway_state.json could not be read',
         detail: gatewayContent.detail,
-        targetPath: gatewayPath,
-      }),
+        targetPath: gatewayPath
+      })
     );
   }
 
-  if (channelDirectoryContent.status === "unreadable") {
+  if (channelDirectoryContent.status === 'unreadable') {
     issues.push(
       createUnreadableRuntimeIssue({
-        id: "shell-channel-directory-unreadable",
-        summary: "channel_directory.json could not be read",
+        id: 'shell-channel-directory-unreadable',
+        summary: 'channel_directory.json could not be read',
         detail: channelDirectoryContent.detail,
-        targetPath: channelDirectoryPath,
-      }),
+        targetPath: channelDirectoryPath
+      })
     );
   }
 
-  if (updateContent.status === "unreadable") {
+  if (updateContent.status === 'unreadable') {
     issues.push(
       createUnreadableRuntimeIssue({
-        id: "shell-update-cache-unreadable",
-        summary: ".update_check could not be read",
+        id: 'shell-update-cache-unreadable',
+        summary: '.update_check could not be read',
         detail: updateContent.detail,
-        targetPath: updatePath,
-      }),
+        targetPath: updatePath
+      })
     );
   }
 
@@ -112,15 +101,15 @@ export function readShellStatusQuery(): HermesQueryResult<ShellStatusSummary> {
       updateStatus: update.status,
       updateBehind: update.behind,
       connectedPlatforms,
-      connectedPlatformCount: connectedPlatforms.length,
+      connectedPlatformCount: connectedPlatforms.length
     },
     capturedAt,
     status:
-      installation.data.status === "missing"
-        ? "missing"
-        : issues.length > 0 || installation.data.status === "partial"
-          ? "partial"
-          : "ready",
-    issues,
+      installation.data.status === 'missing'
+        ? 'missing'
+        : issues.length > 0 || installation.data.status === 'partial'
+          ? 'partial'
+          : 'ready',
+    issues
   });
 }

@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-export type UsageWindowId = "1d" | "7d" | "30d";
+export type UsageWindowId = '1d' | '7d' | '30d';
 
 export type UsageSessionRecord = {
   id: string;
@@ -56,7 +56,7 @@ export type HermesUsageSummary = {
   availableWindows: UsageWindowId[];
 };
 
-export const usageWindowIdSchema = z.enum(["1d", "7d", "30d"]);
+export const usageWindowIdSchema = z.enum(['1d', '7d', '30d']);
 
 export const usageSessionRecordSchema = z.object({
   id: z.string(),
@@ -72,7 +72,7 @@ export const usageSessionRecordSchema = z.object({
   reasoningTokens: z.number(),
   totalTokens: z.number(),
   estimatedCostUsd: z.number().nullable(),
-  costStatus: z.string().nullable(),
+  costStatus: z.string().nullable()
 });
 
 export const usageBreakdownRowSchema = z.object({
@@ -85,7 +85,7 @@ export const usageBreakdownRowSchema = z.object({
   cacheWriteTokens: z.number(),
   reasoningTokens: z.number(),
   totalTokens: z.number(),
-  estimatedCostUsd: z.number(),
+  estimatedCostUsd: z.number()
 });
 
 export const usageWindowSummarySchema = z.object({
@@ -103,11 +103,11 @@ export const usageWindowSummarySchema = z.object({
   topModel: usageBreakdownRowSchema.nullable(),
   topAgent: usageBreakdownRowSchema.nullable(),
   byModel: z.array(usageBreakdownRowSchema),
-  byAgent: z.array(usageBreakdownRowSchema),
+  byAgent: z.array(usageBreakdownRowSchema)
 });
 
 export const hermesUsageSummarySchema = z.object({
   loadedAt: z.string(),
   windows: z.array(usageWindowSummarySchema),
-  availableWindows: z.array(usageWindowIdSchema),
+  availableWindows: z.array(usageWindowIdSchema)
 });

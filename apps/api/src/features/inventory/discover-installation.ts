@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from 'node:path';
 
 import type {
   HermesAgentIdentity,
@@ -6,16 +6,16 @@ import type {
   InventoryInstallationStatus,
   InventoryPathResolution,
   InventoryPresenceKey,
-  InventoryPresenceMap,
-} from "@hermes-console/runtime";
+  InventoryPresenceMap
+} from '@hermes-console/runtime';
 
 export type {
   HermesAgentIdentity,
   InventoryInstallation,
   InventoryInstallationStatus,
   InventoryPresenceKey,
-  InventoryPresenceMap,
-} from "@hermes-console/runtime";
+  InventoryPresenceMap
+} from '@hermes-console/runtime';
 
 export type InventoryFileSystem = {
   pathExists(targetPath: string): boolean;
@@ -23,25 +23,22 @@ export type InventoryFileSystem = {
 };
 
 const PRESENCE_PATHS: Record<InventoryPresenceKey, string> = {
-  config: "config.yaml",
-  memory: "memories",
-  sessions: "sessions",
-  cron: "cron",
-  skills: "skills",
-  stateDb: "state.db",
+  config: 'config.yaml',
+  memory: 'memories',
+  sessions: 'sessions',
+  cron: 'cron',
+  skills: 'skills',
+  stateDb: 'state.db'
 };
 
-function buildPresenceMap(
-  rootPath: string,
-  fileSystem: InventoryFileSystem,
-): InventoryPresenceMap {
+function buildPresenceMap(rootPath: string, fileSystem: InventoryFileSystem): InventoryPresenceMap {
   return {
     config: fileSystem.pathExists(path.join(rootPath, PRESENCE_PATHS.config)),
     memory: fileSystem.pathExists(path.join(rootPath, PRESENCE_PATHS.memory)),
     sessions: fileSystem.pathExists(path.join(rootPath, PRESENCE_PATHS.sessions)),
     cron: fileSystem.pathExists(path.join(rootPath, PRESENCE_PATHS.cron)),
     skills: fileSystem.pathExists(path.join(rootPath, PRESENCE_PATHS.skills)),
-    stateDb: fileSystem.pathExists(path.join(rootPath, PRESENCE_PATHS.stateDb)),
+    stateDb: fileSystem.pathExists(path.join(rootPath, PRESENCE_PATHS.stateDb))
   };
 }
 
@@ -54,12 +51,12 @@ function createAgentIdentity({
   label,
   rootPath,
   source,
-  fileSystem,
+  fileSystem
 }: {
   id: string;
   label: string;
   rootPath: string;
-  source: HermesAgentIdentity["source"];
+  source: HermesAgentIdentity['source'];
   fileSystem: InventoryFileSystem;
 }): HermesAgentIdentity {
   const presence = buildPresenceMap(rootPath, fileSystem);
@@ -70,53 +67,51 @@ function createAgentIdentity({
     rootPath,
     source,
     presence,
-    isAvailable: hasAnyPresence(presence),
+    isAvailable: hasAnyPresence(presence)
   };
 }
 
 function deriveInstallationStatus({
   hermesRootExists,
-  agents,
+  agents
 }: {
   hermesRootExists: boolean;
   agents: HermesAgentIdentity[];
 }): InventoryInstallationStatus {
   if (!hermesRootExists) {
-    return "missing";
+    return 'missing';
   }
 
   if (agents.some((agent) => agent.isAvailable)) {
-    return "ready";
+    return 'ready';
   }
 
-  return "partial";
+  return 'partial';
 }
 
 export function discoverHermesInstallation({
   paths,
-  fileSystem,
+  fileSystem
 }: {
   paths: InventoryPathResolution;
   fileSystem: InventoryFileSystem;
 }): InventoryInstallation {
   const hermesRootPath = paths.hermesRoot.path;
-  const profilesRootPath = path.join(hermesRootPath, "profiles");
+  const profilesRootPath = path.join(hermesRootPath, 'profiles');
   const hermesRootExists = fileSystem.pathExists(hermesRootPath);
   const profilesRootExists = fileSystem.pathExists(profilesRootPath);
 
   const agents: HermesAgentIdentity[] = [
     createAgentIdentity({
-      id: "default",
-      label: "Default",
+      id: 'default',
+      label: 'Default',
       rootPath: hermesRootPath,
-      source: "root",
-      fileSystem,
-    }),
+      source: 'root',
+      fileSystem
+    })
   ];
 
-  const profileDirectoryNames = profilesRootExists
-    ? fileSystem.listDirectories(profilesRootPath)
-    : [];
+  const profileDirectoryNames = profilesRootExists ? fileSystem.listDirectories(profilesRootPath) : [];
 
   for (const profileName of profileDirectoryNames) {
     agents.push(
@@ -124,9 +119,9 @@ export function discoverHermesInstallation({
         id: profileName,
         label: profileName,
         rootPath: path.join(profilesRootPath, profileName),
-        source: "profile",
-        fileSystem,
-      }),
+        source: 'profile',
+        fileSystem
+      })
     );
   }
 
@@ -137,6 +132,6 @@ export function discoverHermesInstallation({
     profilesRootExists,
     agents,
     availableAgentCount: agents.filter((agent) => agent.isAvailable).length,
-    status: deriveInstallationStatus({ hermesRootExists, agents }),
+    status: deriveInstallationStatus({ hermesRootExists, agents })
   };
 }

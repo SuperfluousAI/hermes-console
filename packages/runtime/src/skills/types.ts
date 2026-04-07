@@ -1,7 +1,7 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-export type SkillParseStatus = "valid" | "malformed";
-export type SkillLinkedFileKind = "reference" | "template" | "script" | "asset";
+export type SkillParseStatus = 'valid' | 'malformed';
+export type SkillLinkedFileKind = 'reference' | 'template' | 'script' | 'asset';
 
 export type SkillLinkedFileSummary = {
   id: string;
@@ -47,19 +47,14 @@ export type SkillLinkedFileContent = {
   content: string | null;
 };
 
-export const skillParseStatusSchema = z.enum(["valid", "malformed"]);
-export const skillLinkedFileKindSchema = z.enum([
-  "reference",
-  "template",
-  "script",
-  "asset",
-]);
+export const skillParseStatusSchema = z.enum(['valid', 'malformed']);
+export const skillLinkedFileKindSchema = z.enum(['reference', 'template', 'script', 'asset']);
 
 export const skillLinkedFileSummarySchema = z.object({
   id: z.string(),
   kind: skillLinkedFileKindSchema,
   relativePath: z.string(),
-  absolutePath: z.string(),
+  absolutePath: z.string()
 });
 
 export const skillSummarySchema = z.object({
@@ -70,12 +65,12 @@ export const skillSummarySchema = z.object({
   category: z.string(),
   skillPath: z.string(),
   parseStatus: skillParseStatusSchema,
-  linkedFiles: z.array(skillLinkedFileSummarySchema),
+  linkedFiles: z.array(skillLinkedFileSummarySchema)
 });
 
 export const skillsIndexResultSchema = z.object({
   skillsRoot: z.string(),
-  skills: z.array(skillSummarySchema),
+  skills: z.array(skillSummarySchema)
 });
 
 export const skillDetailSchema = z.object({
@@ -84,17 +79,17 @@ export const skillDetailSchema = z.object({
   body: z.string(),
   frontmatter: z.record(z.string(), z.string()),
   selectedLinkedFile: skillLinkedFileSummarySchema.nullable(),
-  selectedLinkedFileContent: z.string().nullable(),
+  selectedLinkedFileContent: z.string().nullable()
 });
 
 export const skillDocumentDetailSchema = z.object({
   summary: skillSummarySchema,
   rawContent: z.string(),
   body: z.string(),
-  frontmatter: z.record(z.string(), z.string()),
+  frontmatter: z.record(z.string(), z.string())
 });
 
 export const skillLinkedFileContentSchema = z.object({
   file: skillLinkedFileSummarySchema,
-  content: z.string().nullable(),
+  content: z.string().nullable()
 });

@@ -1,9 +1,9 @@
-import type { KeyFileKind } from "@hermes-console/runtime";
+import type { KeyFileKind } from '@hermes-console/runtime';
 
 const LABELS: Record<KeyFileKind, string> = {
-  memory: "memory",
-  identity: "identity",
-  instruction: "instruction",
+  memory: 'memory',
+  identity: 'identity',
+  instruction: 'instruction'
 };
 
 export function KeyFileKindBadge({ kind }: { kind: KeyFileKind }) {

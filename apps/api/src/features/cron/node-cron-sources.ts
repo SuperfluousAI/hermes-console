@@ -1,19 +1,15 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-import { createParseFailedIssue, createUnreadablePathIssue } from "@/lib/query-issue-factories";
-import { createReadResult, type ReadResult } from "@/lib/read-result";
+import { createParseFailedIssue, createUnreadablePathIssue } from '@/lib/query-issue-factories';
+import { createReadResult, type ReadResult } from '@/lib/read-result';
 import {
   cronJobsFileSourceSchema,
+  normalizeDateString,
   type CronJobsFileSource,
-  type CronRunOutputRecord,
-} from "@hermes-console/runtime";
-import type { HermesQueryIssue } from "@hermes-console/runtime";
-
-function normalizeDateString(value: string) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-}
+  type CronRunOutputRecord
+} from '@hermes-console/runtime';
+import type { HermesQueryIssue } from '@hermes-console/runtime';
 
 function parseOutputTimestamp(fileName: string) {
   const match = fileName.match(/^(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})-(\d{2})\.md$/);
@@ -26,43 +22,41 @@ function parseOutputTimestamp(fileName: string) {
 }
 
 function extractResponse(rawContent: string) {
-  const marker = "## Response";
+  const marker = '## Response';
   const markerIndex = rawContent.indexOf(marker);
 
   if (markerIndex === -1) {
     const trimmed = rawContent.trim();
-    return trimmed ? trimmed.slice(0, 280) : "No response captured.";
+    return trimmed ? trimmed.slice(0, 280) : 'No response captured.';
   }
 
   const response = rawContent.slice(markerIndex + marker.length).trim();
-  return response ? response.slice(0, 280) : "No response captured.";
+  return response ? response.slice(0, 280) : 'No response captured.';
 }
 
-function resolveResponseState(preview: string): CronRunOutputRecord["responseState"] {
-  if (!preview || preview === "No response captured.") {
-    return "missing";
+function resolveResponseState(preview: string): CronRunOutputRecord['responseState'] {
+  if (!preview || preview === 'No response captured.') {
+    return 'missing';
   }
 
-  if (preview.trim() === "[SILENT]") {
-    return "silent";
+  if (preview.trim() === '[SILENT]') {
+    return 'silent';
   }
 
-  return "contentful";
+  return 'contentful';
 }
 
-export function readCronJobsFileResult(
-  agentRootPath: string,
-): ReadResult<CronJobsFileSource> {
-  const jobsPath = path.join(agentRootPath, "cron", "jobs.json");
+export function readCronJobsFileResult(agentRootPath: string): ReadResult<CronJobsFileSource> {
+  const jobsPath = path.join(agentRootPath, 'cron', 'jobs.json');
 
   if (!fs.existsSync(jobsPath)) {
     return createReadResult({
-      data: { jobs: [] },
+      data: { jobs: [] }
     });
   }
 
   try {
-    const parsed = JSON.parse(fs.readFileSync(jobsPath, "utf8")) as unknown;
+    const parsed = JSON.parse(fs.readFileSync(jobsPath, 'utf8')) as unknown;
     const validated = cronJobsFileSourceSchema.safeParse(parsed);
 
     if (!validated.success) {
@@ -71,38 +65,32 @@ export function readCronJobsFileResult(
         issues: [
           createParseFailedIssue({
             id: `cron-jobs-invalid-shape-${agentRootPath}`,
-            summary: "Cron jobs file had an unexpected shape",
+            summary: 'Cron jobs file had an unexpected shape',
             detail:
               validated.error.issues[0]?.message ??
-              "Hermes Console expected cron/jobs.json to contain a valid jobs array.",
-            path: jobsPath,
-          }),
-        ],
+              'Hermes Console expected cron/jobs.json to contain a valid jobs array.',
+            path: jobsPath
+          })
+        ]
       });
     }
 
     return createReadResult({
-      data: validated.data,
+      data: validated.data
     });
   } catch (error) {
-    const issueFactory =
-      error instanceof SyntaxError
-        ? createParseFailedIssue
-        : createUnreadablePathIssue;
+    const issueFactory = error instanceof SyntaxError ? createParseFailedIssue : createUnreadablePathIssue;
 
     return createReadResult({
       data: { jobs: [] },
       issues: [
         issueFactory({
           id: `cron-jobs-read-failed-${agentRootPath}`,
-          summary: "Cron jobs file could not be read",
-          detail:
-            error instanceof Error
-              ? error.message
-              : "Hermes Console could not read the cron jobs file.",
-          path: jobsPath,
-        }),
-      ],
+          summary: 'Cron jobs file could not be read',
+          detail: error instanceof Error ? error.message : 'Hermes Console could not read the cron jobs file.',
+          path: jobsPath
+        })
+      ]
     });
   }
 }
@@ -111,14 +99,12 @@ export function readCronJobsFile(agentRootPath: string) {
   return readCronJobsFileResult(agentRootPath).data;
 }
 
-export function readCronOutputHistoryResult(
-  agentRootPath: string,
-): ReadResult<Map<string, CronRunOutputRecord[]>> {
-  const outputRoot = path.join(agentRootPath, "cron", "output");
+export function readCronOutputHistoryResult(agentRootPath: string): ReadResult<Map<string, CronRunOutputRecord[]>> {
+  const outputRoot = path.join(agentRootPath, 'cron', 'output');
 
   if (!fs.existsSync(outputRoot)) {
     return createReadResult({
-      data: new Map<string, CronRunOutputRecord[]>(),
+      data: new Map<string, CronRunOutputRecord[]>()
     });
   }
 
@@ -137,10 +123,10 @@ export function readCronOutputHistoryResult(
       try {
         const outputs = fs
           .readdirSync(jobOutputDir, { withFileTypes: true })
-          .filter((child) => child.isFile() && child.name.endsWith(".md"))
+          .filter((child) => child.isFile() && child.name.endsWith('.md'))
           .map((child) => {
             const outputPath = path.join(jobOutputDir, child.name);
-            const rawContent = fs.readFileSync(outputPath, "utf8");
+            const rawContent = fs.readFileSync(outputPath, 'utf8');
             const responsePreview = extractResponse(rawContent);
 
             return {
@@ -151,16 +137,12 @@ export function readCronOutputHistoryResult(
               createdAt: parseOutputTimestamp(child.name),
               responsePreview,
               responseState: resolveResponseState(responsePreview),
-              rawContent,
+              rawContent
             } satisfies CronRunOutputRecord;
           })
           .sort((left, right) => {
-            const leftTime = left.createdAt
-              ? new Date(left.createdAt).getTime()
-              : 0;
-            const rightTime = right.createdAt
-              ? new Date(right.createdAt).getTime()
-              : 0;
+            const leftTime = left.createdAt ? new Date(left.createdAt).getTime() : 0;
+            const rightTime = right.createdAt ? new Date(right.createdAt).getTime() : 0;
             return rightTime - leftTime;
           });
 
@@ -169,13 +151,10 @@ export function readCronOutputHistoryResult(
         issues.push(
           createUnreadablePathIssue({
             id: `cron-output-read-failed-${jobId}`,
-            summary: "Cron output history could not be read",
-            detail:
-              error instanceof Error
-                ? error.message
-                : "Hermes Console could not read the cron output history.",
-            path: jobOutputDir,
-          }),
+            summary: 'Cron output history could not be read',
+            detail: error instanceof Error ? error.message : 'Hermes Console could not read the cron output history.',
+            path: jobOutputDir
+          })
         );
       }
     }
@@ -185,20 +164,17 @@ export function readCronOutputHistoryResult(
       issues: [
         createUnreadablePathIssue({
           id: `cron-output-root-read-failed-${agentRootPath}`,
-          summary: "Cron output directory could not be read",
-          detail:
-            error instanceof Error
-              ? error.message
-              : "Hermes Console could not read the cron output directory.",
-          path: outputRoot,
-        }),
-      ],
+          summary: 'Cron output directory could not be read',
+          detail: error instanceof Error ? error.message : 'Hermes Console could not read the cron output directory.',
+          path: outputRoot
+        })
+      ]
     });
   }
 
   return createReadResult({
     data: byJob,
-    issues,
+    issues
   });
 }
 

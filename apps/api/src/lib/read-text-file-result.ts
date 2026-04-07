@@ -1,16 +1,16 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
 export type TextFileReadResult =
   | {
-      status: "ready";
+      status: 'ready';
       content: string;
     }
   | {
-      status: "missing";
+      status: 'missing';
       content: null;
     }
   | {
-      status: "unreadable";
+      status: 'unreadable';
       content: null;
       detail: string;
     };
@@ -19,23 +19,20 @@ export function readTextFileResult(targetPath: string): TextFileReadResult {
   try {
     if (!fs.existsSync(targetPath)) {
       return {
-        status: "missing",
-        content: null,
+        status: 'missing',
+        content: null
       };
     }
 
     return {
-      status: "ready",
-      content: fs.readFileSync(targetPath, "utf8"),
+      status: 'ready',
+      content: fs.readFileSync(targetPath, 'utf8')
     };
   } catch (error) {
     return {
-      status: "unreadable",
+      status: 'unreadable',
       content: null,
-      detail:
-        error instanceof Error
-          ? error.message
-          : "Hermes Console could not read the requested text file.",
+      detail: error instanceof Error ? error.message : 'Hermes Console could not read the requested text file.'
     };
   }
 }

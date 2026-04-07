@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export type CronAgentRef = {
   id: string;
   label: string;
   rootPath: string;
-  source: "root" | "profile";
+  source: 'root' | 'profile';
 };
 
 export type CronJobRecord = {
@@ -31,7 +31,7 @@ export type CronJobRecord = {
   originChatName: string | null;
 };
 
-export type CronRunOutputState = "silent" | "contentful" | "missing";
+export type CronRunOutputState = 'silent' | 'contentful' | 'missing';
 
 export type CronRunOutputRecord = {
   id: string;
@@ -55,8 +55,8 @@ export type CronObservedRunRecord = {
 
 export type HermesCronJobSummary = CronJobRecord & {
   summaryId: string;
-  statusTone: "healthy" | "warning" | "error" | "muted";
-  attentionLevel: "healthy" | "warning" | "critical" | "muted";
+  statusTone: 'healthy' | 'warning' | 'error' | 'muted';
+  attentionLevel: 'healthy' | 'warning' | 'critical' | 'muted';
   overdue: boolean;
   failureStreak: number;
   recentFailureCount: number;
@@ -122,7 +122,7 @@ export const cronAgentRefSchema = z.object({
   id: z.string(),
   label: z.string(),
   rootPath: z.string(),
-  source: z.enum(["root", "profile"]),
+  source: z.enum(['root', 'profile'])
 });
 
 export const cronJobRecordSchema = z.object({
@@ -146,14 +146,10 @@ export const cronJobRecordSchema = z.object({
   skill: z.string().nullable(),
   scheduleKind: z.string().nullable(),
   repeatCompleted: z.number().nullable(),
-  originChatName: z.string().nullable(),
+  originChatName: z.string().nullable()
 });
 
-export const cronRunOutputStateSchema = z.enum([
-  "silent",
-  "contentful",
-  "missing",
-]);
+export const cronRunOutputStateSchema = z.enum(['silent', 'contentful', 'missing']);
 
 export const cronRunOutputRecordSchema = z.object({
   id: z.string(),
@@ -163,7 +159,7 @@ export const cronRunOutputRecordSchema = z.object({
   createdAt: z.string().nullable(),
   responsePreview: z.string(),
   responseState: cronRunOutputStateSchema,
-  rawContent: z.string(),
+  rawContent: z.string()
 });
 
 export const cronObservedRunRecordSchema = z.object({
@@ -172,20 +168,20 @@ export const cronObservedRunRecordSchema = z.object({
   startedAt: z.string(),
   endedAt: z.string().nullable(),
   durationMs: z.number().nullable(),
-  success: z.boolean(),
+  success: z.boolean()
 });
 
 export const cronJobScheduleSourceSchema = z.object({
   kind: z.string().nullable().optional(),
-  display: z.string().nullable().optional(),
+  display: z.string().nullable().optional()
 });
 
 export const cronJobRepeatSourceSchema = z.object({
-  completed: z.number().nullable().optional(),
+  completed: z.number().nullable().optional()
 });
 
 export const cronJobOriginSourceSchema = z.object({
-  chat_name: z.string().nullable().optional(),
+  chat_name: z.string().nullable().optional()
 });
 
 export const cronJobSourceRecordSchema = z.object({
@@ -205,17 +201,17 @@ export const cronJobSourceRecordSchema = z.object({
   skill: z.string().nullable().optional(),
   schedule: cronJobScheduleSourceSchema.nullable().optional(),
   repeat: cronJobRepeatSourceSchema.nullable().optional(),
-  origin: cronJobOriginSourceSchema.nullable().optional(),
+  origin: cronJobOriginSourceSchema.nullable().optional()
 });
 
 export const cronJobsFileSourceSchema = z.object({
-  jobs: z.array(cronJobSourceRecordSchema),
+  jobs: z.array(cronJobSourceRecordSchema)
 });
 
 export const hermesCronJobSummarySchema = cronJobRecordSchema.extend({
   summaryId: z.string(),
-  statusTone: z.enum(["healthy", "warning", "error", "muted"]),
-  attentionLevel: z.enum(["healthy", "warning", "critical", "muted"]),
+  statusTone: z.enum(['healthy', 'warning', 'error', 'muted']),
+  attentionLevel: z.enum(['healthy', 'warning', 'critical', 'muted']),
   overdue: z.boolean(),
   failureStreak: z.number(),
   recentFailureCount: z.number(),
@@ -223,13 +219,13 @@ export const hermesCronJobSummarySchema = cronJobRecordSchema.extend({
   latestDurationMs: z.number().nullable(),
   averageDurationMs: z.number().nullable(),
   latestOutputState: cronRunOutputStateSchema,
-  recentOutputCount: z.number(),
+  recentOutputCount: z.number()
 });
 
 export const hermesCronIndexSchema = z.object({
   jobs: z.array(hermesCronJobSummarySchema),
   agentCount: z.number(),
-  agentsWithCron: z.number(),
+  agentsWithCron: z.number()
 });
 
 export const hermesCronJobDetailSchema = z.object({
@@ -237,5 +233,5 @@ export const hermesCronJobDetailSchema = z.object({
   outputs: z.array(cronRunOutputRecordSchema),
   recentOutputCount: z.number(),
   latestOutputState: cronRunOutputStateSchema,
-  hasOutputs: z.boolean(),
+  hasOutputs: z.boolean()
 });

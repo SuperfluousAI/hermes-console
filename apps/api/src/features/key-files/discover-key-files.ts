@@ -1,6 +1,6 @@
-import path from "node:path";
+import path from 'node:path';
 
-import type { KeyFilesDiscoveryResult, KeyFileKind, KeyFileScope, KeyFileSummary } from "@hermes-console/runtime";
+import type { KeyFilesDiscoveryResult, KeyFileKind, KeyFileScope, KeyFileSummary } from '@hermes-console/runtime';
 
 export type KeyFileStat = {
   size: number;
@@ -22,28 +22,28 @@ type FileCandidate = {
 };
 
 const HERMES_ROOT_CANDIDATES: FileCandidate[] = [
-  { relativePath: "SOUL.md", name: "SOUL.md", kind: "identity" },
-  { relativePath: "AGENTS.md", name: "AGENTS.md", kind: "instruction" },
-  { relativePath: "CLAUDE.md", name: "CLAUDE.md", kind: "instruction" },
-  { relativePath: ".hermes.md", name: ".hermes.md", kind: "instruction" },
-  { relativePath: ".cursorrules", name: ".cursorrules", kind: "instruction" },
-  { relativePath: "memories/MEMORY.md", name: "MEMORY.md", kind: "memory" },
-  { relativePath: "memories/USER.md", name: "USER.md", kind: "memory" },
+  { relativePath: 'SOUL.md', name: 'SOUL.md', kind: 'identity' },
+  { relativePath: 'AGENTS.md', name: 'AGENTS.md', kind: 'instruction' },
+  { relativePath: 'CLAUDE.md', name: 'CLAUDE.md', kind: 'instruction' },
+  { relativePath: '.hermes.md', name: '.hermes.md', kind: 'instruction' },
+  { relativePath: '.cursorrules', name: '.cursorrules', kind: 'instruction' },
+  { relativePath: 'memories/MEMORY.md', name: 'MEMORY.md', kind: 'memory' },
+  { relativePath: 'memories/USER.md', name: 'USER.md', kind: 'memory' }
 ];
 
-const WORKSPACE_EXACT_FILE_NAMES = new Set([".cursorrules"]);
+const WORKSPACE_EXACT_FILE_NAMES = new Set(['.cursorrules']);
 const IGNORED_DIRECTORY_NAMES = new Set([
-  ".git",
-  "node_modules",
-  ".next",
-  "dist",
-  "build",
-  "coverage",
-  "vendor",
-  "tmp",
-  ".turbo",
-  ".pnpm-store",
-  "go",
+  '.git',
+  'node_modules',
+  '.next',
+  'dist',
+  'build',
+  'coverage',
+  'vendor',
+  'tmp',
+  '.turbo',
+  '.pnpm-store',
+  'go'
 ]);
 
 function createSummary({
@@ -52,7 +52,7 @@ function createSummary({
   filePath,
   name,
   kind,
-  stat,
+  stat
 }: {
   scope: KeyFileScope;
   rootPath: string;
@@ -71,13 +71,13 @@ function createSummary({
     relativePath,
     kind,
     fileSize: stat.size,
-    lastModifiedMs: stat.mtimeMs,
+    lastModifiedMs: stat.mtimeMs
   };
 }
 
 function discoverHermesRootFiles({
   hermesRoot,
-  fileSystem,
+  fileSystem
 }: {
   hermesRoot: string;
   fileSystem: KeyFilesFileSystem;
@@ -96,20 +96,20 @@ function discoverHermesRootFiles({
 
     return [
       createSummary({
-        scope: "hermes_root",
+        scope: 'hermes_root',
         rootPath: hermesRoot,
         filePath,
         name: candidate.name,
         kind: candidate.kind,
-        stat,
-      }),
+        stat
+      })
     ];
   });
 }
 
 function collectWorkspaceDirectories({
   workspaceRoot,
-  fileSystem,
+  fileSystem
 }: {
   workspaceRoot: string;
   fileSystem: KeyFilesFileSystem;
@@ -139,12 +139,12 @@ function collectWorkspaceDirectories({
 }
 
 function classifyWorkspaceFile(fileName: string): KeyFileKind | null {
-  if (fileName === "SOUL.md") {
-    return "identity";
+  if (fileName === 'SOUL.md') {
+    return 'identity';
   }
 
-  if (fileName.endsWith(".md") || WORKSPACE_EXACT_FILE_NAMES.has(fileName)) {
-    return "instruction";
+  if (fileName.endsWith('.md') || WORKSPACE_EXACT_FILE_NAMES.has(fileName)) {
+    return 'instruction';
   }
 
   return null;
@@ -152,7 +152,7 @@ function classifyWorkspaceFile(fileName: string): KeyFileKind | null {
 
 function discoverWorkspaceFiles({
   workspaceRoot,
-  fileSystem,
+  fileSystem
 }: {
   workspaceRoot: string;
   fileSystem: KeyFilesFileSystem;
@@ -177,13 +177,13 @@ function discoverWorkspaceFiles({
 
       files.push(
         createSummary({
-          scope: "workspace_root",
+          scope: 'workspace_root',
           rootPath: workspaceRoot,
           filePath,
           name: fileName,
           kind,
-          stat,
-        }),
+          stat
+        })
       );
     }
   }
@@ -195,7 +195,7 @@ export function discoverKeyFiles({
   hermesRoot,
   workspaceRoot,
   includeWorkspaceRoot = true,
-  fileSystem,
+  fileSystem
 }: {
   hermesRoot: string;
   workspaceRoot: string;
@@ -204,20 +204,18 @@ export function discoverKeyFiles({
 }): KeyFilesDiscoveryResult {
   const discovered = [
     ...discoverHermesRootFiles({ hermesRoot, fileSystem }),
-    ...(includeWorkspaceRoot
-      ? discoverWorkspaceFiles({ workspaceRoot, fileSystem })
-      : []),
+    ...(includeWorkspaceRoot ? discoverWorkspaceFiles({ workspaceRoot, fileSystem }) : [])
   ];
 
-  const deduped = Array.from(new Map(discovered.map((file) => [file.path, file])).values()).sort(
-    (left, right) => left.path.localeCompare(right.path),
+  const deduped = Array.from(new Map(discovered.map((file) => [file.path, file])).values()).sort((left, right) =>
+    left.path.localeCompare(right.path)
   );
 
   return {
     roots: {
       hermesRoot,
-      workspaceRoot,
+      workspaceRoot
     },
-    files: deduped,
+    files: deduped
   };
 }

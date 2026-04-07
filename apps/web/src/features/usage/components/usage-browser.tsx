@@ -1,8 +1,8 @@
-import type { QueryKey } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import type { QueryKey } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 
-import { RefreshButton } from "@/components/ui/refresh-button";
-import type { HermesUsageSummary, UsageBreakdownRow, UsageWindowId } from "@hermes-console/runtime";
+import { RefreshButton } from '@/components/ui/refresh-button';
+import type { HermesUsageSummary, UsageBreakdownRow, UsageWindowId } from '@hermes-console/runtime';
 
 function formatInteger(value: number) {
   return new Intl.NumberFormat().format(value);
@@ -10,23 +10,21 @@ function formatInteger(value: number) {
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: value >= 100 ? 0 : 2,
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: value >= 100 ? 0 : 2
   }).format(value);
 }
 
-function UsageSummaryGrid({
-  items,
-}: {
-  items: Array<{ label: string; value: string; detail: string }>;
-}) {
+function UsageSummaryGrid({ items }: { items: Array<{ label: string; value: string; detail: string }> }) {
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
         <article key={item.label} className="rounded-lg border border-border bg-surface/70 p-4">
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-faint">{item.label}</p>
-          <p className="mt-3 font-[family-name:var(--font-bricolage)] text-2xl font-semibold tracking-tight text-fg-strong">{item.value}</p>
+          <p className="mt-3 font-[family-name:var(--font-bricolage)] text-2xl font-semibold tracking-tight text-fg-strong">
+            {item.value}
+          </p>
           <p className="mt-2 text-sm leading-6 text-fg-muted">{item.detail}</p>
         </article>
       ))}
@@ -34,7 +32,15 @@ function UsageSummaryGrid({
   );
 }
 
-function BreakdownTable({ title, description, rows }: { title: string; description: string; rows: UsageBreakdownRow[] }) {
+function BreakdownTable({
+  title,
+  description,
+  rows
+}: {
+  title: string;
+  description: string;
+  rows: UsageBreakdownRow[];
+}) {
   return (
     <section className="rounded-lg border border-border bg-surface/70 p-4">
       <div className="mb-4">
@@ -73,18 +79,12 @@ function BreakdownTable({ title, description, rows }: { title: string; descripti
   );
 }
 
-export function UsageBrowser({
-  refreshQueryKeys,
-  usage,
-}: {
-  refreshQueryKeys: QueryKey[];
-  usage: HermesUsageSummary;
-}) {
-  const [windowId, setWindowId] = useState<UsageWindowId>("7d");
+export function UsageBrowser({ refreshQueryKeys, usage }: { refreshQueryKeys: QueryKey[]; usage: HermesUsageSummary }) {
+  const [windowId, setWindowId] = useState<UsageWindowId>('7d');
 
   const current = useMemo(
     () => usage.windows.find((window) => window.id === windowId) ?? usage.windows[0],
-    [usage.windows, windowId],
+    [usage.windows, windowId]
   );
 
   if (!current) {
@@ -99,33 +99,37 @@ export function UsageBrowser({
 
   const summaryItems = [
     {
-      label: "total tokens",
+      label: 'total tokens',
       value: formatInteger(current.totalTokens),
-      detail: `${formatInteger(current.sessionCount)} sessions in the selected window.`,
+      detail: `${formatInteger(current.sessionCount)} sessions in the selected window.`
     },
     {
-      label: "estimated cost",
+      label: 'estimated cost',
       value: formatCurrency(current.estimatedCostUsd),
-      detail: "Estimated cost. Subscription models may show $0.",
+      detail: 'Estimated cost. Subscription models may show $0.'
     },
     {
-      label: "top model",
-      value: current.topModel?.label ?? "—",
-      detail: current.topModel ? `${formatInteger(current.topModel.totalTokens)} tokens` : "No model usage recorded in this window.",
+      label: 'top model',
+      value: current.topModel?.label ?? '—',
+      detail: current.topModel
+        ? `${formatInteger(current.topModel.totalTokens)} tokens`
+        : 'No model usage recorded in this window.'
     },
     {
-      label: "top agent",
-      value: current.topAgent?.label ?? "—",
-      detail: current.topAgent ? `${formatInteger(current.topAgent.totalTokens)} tokens` : "No agent usage recorded in this window.",
-    },
+      label: 'top agent',
+      value: current.topAgent?.label ?? '—',
+      detail: current.topAgent
+        ? `${formatInteger(current.topAgent.totalTokens)} tokens`
+        : 'No agent usage recorded in this window.'
+    }
   ];
 
   const tokenBreakdown = [
-    { label: "input", value: formatInteger(current.inputTokens) },
-    { label: "output", value: formatInteger(current.outputTokens) },
-    { label: "cache read", value: formatInteger(current.cacheReadTokens) },
-    { label: "cache write", value: formatInteger(current.cacheWriteTokens) },
-    { label: "reasoning", value: formatInteger(current.reasoningTokens) },
+    { label: 'input', value: formatInteger(current.inputTokens) },
+    { label: 'output', value: formatInteger(current.outputTokens) },
+    { label: 'cache read', value: formatInteger(current.cacheReadTokens) },
+    { label: 'cache write', value: formatInteger(current.cacheWriteTokens) },
+    { label: 'reasoning', value: formatInteger(current.reasoningTokens) }
   ];
 
   return (
@@ -150,9 +154,11 @@ export function UsageBrowser({
                 type="button"
                 onClick={() => setWindowId(id)}
                 className={[
-                  "rounded-md border px-3 py-1.5 text-sm transition-colors",
-                  active ? "border-accent/50 bg-accent/10 text-accent" : "border-border/80 bg-bg/40 text-fg-muted hover:text-fg",
-                ].join(" ")}
+                  'rounded-md border px-3 py-1.5 text-sm transition-colors',
+                  active
+                    ? 'border-accent/50 bg-accent/10 text-accent'
+                    : 'border-border/80 bg-bg/40 text-fg-muted hover:text-fg'
+                ].join(' ')}
               >
                 {id}
               </button>
@@ -165,22 +171,36 @@ export function UsageBrowser({
 
       <section className="rounded-lg border border-border bg-surface/70 p-4">
         <div className="mb-4">
-          <h3 className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">Token breakdown</h3>
-          <p className="mt-2 text-sm leading-6 text-fg-muted">Input, output, cache, and reasoning tokens for the selected window.</p>
+          <h3 className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">
+            Token breakdown
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-fg-muted">
+            Input, output, cache, and reasoning tokens for the selected window.
+          </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {tokenBreakdown.map((item) => (
             <article key={item.label} className="rounded-md border border-border/70 bg-bg/40 p-4">
               <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-faint">{item.label}</p>
-              <p className="mt-2 font-[family-name:var(--font-bricolage)] text-2xl font-semibold tracking-tight text-fg-strong">{item.value}</p>
+              <p className="mt-2 font-[family-name:var(--font-bricolage)] text-2xl font-semibold tracking-tight text-fg-strong">
+                {item.value}
+              </p>
             </article>
           ))}
         </div>
       </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <BreakdownTable title="By model" description="Which models are driving token usage in the selected window." rows={current.byModel} />
-        <BreakdownTable title="By agent" description="How usage is split across the default agent and any profile agents." rows={current.byAgent} />
+        <BreakdownTable
+          title="By model"
+          description="Which models are driving token usage in the selected window."
+          rows={current.byModel}
+        />
+        <BreakdownTable
+          title="By agent"
+          description="How usage is split across the default agent and any profile agents."
+          rows={current.byAgent}
+        />
       </div>
     </div>
   );

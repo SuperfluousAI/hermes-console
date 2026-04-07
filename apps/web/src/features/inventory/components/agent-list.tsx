@@ -1,12 +1,12 @@
-import type { HermesAgentIdentity } from "@hermes-console/runtime";
+import type { HermesAgentIdentity } from '@hermes-console/runtime';
 
-const presenceLabels: Array<keyof HermesAgentIdentity["presence"]> = [
-  "config",
-  "memory",
-  "sessions",
-  "cron",
-  "skills",
-  "stateDb",
+const presenceLabels: Array<keyof HermesAgentIdentity['presence']> = [
+  'config',
+  'memory',
+  'sessions',
+  'cron',
+  'skills',
+  'stateDb'
 ];
 
 export function AgentList({ agents }: { agents: HermesAgentIdentity[] }) {
@@ -29,18 +29,16 @@ export function AgentList({ agents }: { agents: HermesAgentIdentity[] }) {
                   </span>
                   <span
                     className={[
-                      "rounded-md border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em]",
+                      'rounded-md border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em]',
                       agent.isAvailable
-                        ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
-                        : "border-amber-500/25 bg-amber-500/10 text-amber-300",
-                    ].join(" ")}
+                        ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+                        : 'border-amber-500/25 bg-amber-500/10 text-amber-300'
+                    ].join(' ')}
                   >
-                    {agent.isAvailable ? "available" : "empty"}
+                    {agent.isAvailable ? 'available' : 'empty'}
                   </span>
                 </div>
-                <p className="mt-2 break-all font-mono text-xs leading-6 text-fg-muted">
-                  {agent.rootPath}
-                </p>
+                <p className="mt-2 break-all font-mono text-xs leading-6 text-fg-muted">{agent.rootPath}</p>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -48,11 +46,11 @@ export function AgentList({ agents }: { agents: HermesAgentIdentity[] }) {
                   <span
                     key={key}
                     className={[
-                      "rounded-md border px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em]",
+                      'rounded-md border px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em]',
                       agent.presence[key]
-                        ? "border-emerald-500/15 bg-emerald-500/5 text-emerald-300"
-                        : "border-border bg-black/10 text-fg-faint",
-                    ].join(" ")}
+                        ? 'border-emerald-500/15 bg-emerald-500/5 text-emerald-300'
+                        : 'border-border bg-black/10 text-fg-faint'
+                    ].join(' ')}
                   >
                     {key}
                   </span>

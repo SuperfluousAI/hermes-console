@@ -1,7 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
 
-import type { InventoryFileSystem } from "@/features/inventory/discover-installation";
+import type { InventoryFileSystem } from '@/features/inventory/discover-installation';
 
 export const nodeInventoryFileSystem: InventoryFileSystem = {
   pathExists(targetPath) {
@@ -25,9 +24,5 @@ export const nodeInventoryFileSystem: InventoryFileSystem = {
     } catch {
       return [];
     }
-  },
+  }
 };
-
-export function normalizeRootPath(targetPath: string) {
-  return path.resolve(targetPath);
-}

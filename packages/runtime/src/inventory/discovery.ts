@@ -1,15 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import type { InventoryPathResolution } from "./types.js";
-import { inventoryPathResolutionSchema } from "./types.js";
+import type { InventoryPathResolution } from './types.js';
+import { inventoryPathResolutionSchema } from './types.js';
 
-export type InventoryPresenceKey =
-  | "config"
-  | "memory"
-  | "sessions"
-  | "cron"
-  | "skills"
-  | "stateDb";
+export type InventoryPresenceKey = 'config' | 'memory' | 'sessions' | 'cron' | 'skills' | 'stateDb';
 
 export type InventoryPresenceMap = Record<InventoryPresenceKey, boolean>;
 
@@ -17,12 +11,12 @@ export type HermesAgentIdentity = {
   id: string;
   label: string;
   rootPath: string;
-  source: "root" | "profile";
+  source: 'root' | 'profile';
   presence: InventoryPresenceMap;
   isAvailable: boolean;
 };
 
-export type InventoryInstallationStatus = "ready" | "partial" | "missing";
+export type InventoryInstallationStatus = 'ready' | 'partial' | 'missing';
 
 export type InventoryInstallation = {
   paths: InventoryPathResolution;
@@ -34,14 +28,7 @@ export type InventoryInstallation = {
   status: InventoryInstallationStatus;
 };
 
-export const inventoryPresenceKeySchema = z.enum([
-  "config",
-  "memory",
-  "sessions",
-  "cron",
-  "skills",
-  "stateDb",
-]);
+export const inventoryPresenceKeySchema = z.enum(['config', 'memory', 'sessions', 'cron', 'skills', 'stateDb']);
 
 export const inventoryPresenceMapSchema = z.object({
   config: z.boolean(),
@@ -49,23 +36,19 @@ export const inventoryPresenceMapSchema = z.object({
   sessions: z.boolean(),
   cron: z.boolean(),
   skills: z.boolean(),
-  stateDb: z.boolean(),
+  stateDb: z.boolean()
 });
 
 export const hermesAgentIdentitySchema = z.object({
   id: z.string(),
   label: z.string(),
   rootPath: z.string(),
-  source: z.enum(["root", "profile"]),
+  source: z.enum(['root', 'profile']),
   presence: inventoryPresenceMapSchema,
-  isAvailable: z.boolean(),
+  isAvailable: z.boolean()
 });
 
-export const inventoryInstallationStatusSchema = z.enum([
-  "ready",
-  "partial",
-  "missing",
-]);
+export const inventoryInstallationStatusSchema = z.enum(['ready', 'partial', 'missing']);
 
 export const inventoryInstallationSchema = z.object({
   paths: inventoryPathResolutionSchema,
@@ -74,5 +57,5 @@ export const inventoryInstallationSchema = z.object({
   profilesRootExists: z.boolean(),
   agents: z.array(hermesAgentIdentitySchema),
   availableAgentCount: z.number(),
-  status: inventoryInstallationStatusSchema,
+  status: inventoryInstallationStatusSchema
 });

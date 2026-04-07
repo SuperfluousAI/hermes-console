@@ -1,6 +1,6 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
-import type { KeyFilesFileSystem } from "@/features/key-files/discover-key-files";
+import type { KeyFilesFileSystem } from '@/features/key-files/discover-key-files';
 
 export const nodeKeyFilesFileSystem: KeyFilesFileSystem = {
   pathExists(targetPath) {
@@ -54,7 +54,7 @@ export const nodeKeyFilesFileSystem: KeyFilesFileSystem = {
 
       return {
         size: stat.size,
-        mtimeMs: stat.mtimeMs,
+        mtimeMs: stat.mtimeMs
       };
     } catch {
       return null;
@@ -72,9 +72,9 @@ export const nodeKeyFilesFileSystem: KeyFilesFileSystem = {
         return null;
       }
 
-      return fs.readFileSync(targetPath, "utf8");
+      return fs.readFileSync(targetPath, 'utf8');
     } catch {
       return null;
     }
-  },
+  }
 };

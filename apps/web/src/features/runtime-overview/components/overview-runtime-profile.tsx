@@ -1,10 +1,12 @@
-import type { RuntimeOverviewSummary } from "@hermes-console/runtime";
+import type { RuntimeOverviewSummary } from '@hermes-console/runtime';
 
 export function OverviewRuntimeProfile({ overview }: { overview: RuntimeOverviewSummary }) {
   return (
     <section className="rounded-xl border border-border bg-surface/70 p-4">
       <div className="mb-4">
-        <h3 className="font-[family-name:var(--font-bricolage)] text-lg font-semibold text-fg-strong">Runtime profile</h3>
+        <h3 className="font-[family-name:var(--font-bricolage)] text-lg font-semibold text-fg-strong">
+          Runtime profile
+        </h3>
         <p className="mt-2 text-sm leading-6 text-fg-muted">Key configuration defaults for this installation.</p>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

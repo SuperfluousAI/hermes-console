@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
-import { AppSidebar } from "@/components/app-shell/app-sidebar";
-import { AppTopbar } from "@/components/app-shell/app-topbar";
+import { AppSidebar } from '@/components/app-shell/app-sidebar';
+import { AppTopbar } from '@/components/app-shell/app-topbar';
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -9,11 +9,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <AppSidebar />
       <div className="min-w-0">
         <AppTopbar />
-        <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 lg:px-6 lg:py-5">
-          {children}
-        </main>
+        <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 lg:px-6 lg:py-5">{children}</main>
         <footer className="mx-auto mt-8 w-full max-w-6xl border-t border-border/40 px-4 py-6 text-xs text-fg-faint lg:px-6">
-          Built by{" "}
+          Built by{' '}
           <a
             href="https://shan8851.com"
             target="_blank"

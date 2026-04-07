@@ -1,16 +1,12 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const DEFAULT_MEMORY_CHAR_LIMIT = 2200;
 export const DEFAULT_USER_CHAR_LIMIT = 1375;
 
-export type MemoryScope = "memory" | "user";
-export type MemoryLimitSource = "config" | "default";
-export type MemoryReadStatus = "ready" | "partial" | "missing";
-export type MemoryPressureLevel =
-  | "healthy"
-  | "approaching_limit"
-  | "near_limit"
-  | "at_limit";
+export type MemoryScope = 'memory' | 'user';
+export type MemoryLimitSource = 'config' | 'default';
+export type MemoryReadStatus = 'ready' | 'partial' | 'missing';
+export type MemoryPressureLevel = 'healthy' | 'approaching_limit' | 'near_limit' | 'at_limit';
 
 export type MemoryEntry = {
   id: string;
@@ -52,25 +48,20 @@ export type MemoryReadResult = {
   };
 };
 
-export const memoryScopeSchema = z.enum(["memory", "user"]);
-export const memoryLimitSourceSchema = z.enum(["config", "default"]);
-export const memoryReadStatusSchema = z.enum(["ready", "partial", "missing"]);
-export const memoryPressureLevelSchema = z.enum([
-  "healthy",
-  "approaching_limit",
-  "near_limit",
-  "at_limit",
-]);
+export const memoryScopeSchema = z.enum(['memory', 'user']);
+export const memoryLimitSourceSchema = z.enum(['config', 'default']);
+export const memoryReadStatusSchema = z.enum(['ready', 'partial', 'missing']);
+export const memoryPressureLevelSchema = z.enum(['healthy', 'approaching_limit', 'near_limit', 'at_limit']);
 
 export const memoryEntrySchema = z.object({
   id: z.string(),
   content: z.string(),
-  charCount: z.number(),
+  charCount: z.number()
 });
 
 export const memoryLimitSummarySchema = z.object({
   value: z.number(),
-  source: memoryLimitSourceSchema,
+  source: memoryLimitSourceSchema
 });
 
 export const memoryFileSummarySchema = z.object({
@@ -85,7 +76,7 @@ export const memoryFileSummarySchema = z.object({
   limit: z.number(),
   usageRatio: z.number(),
   usagePercentage: z.number(),
-  pressureLevel: memoryPressureLevelSchema,
+  pressureLevel: memoryPressureLevelSchema
 });
 
 export const memoryReadResultSchema = z.object({
@@ -94,10 +85,10 @@ export const memoryReadResultSchema = z.object({
   configPath: z.string(),
   limits: z.object({
     memory: memoryLimitSummarySchema,
-    user: memoryLimitSummarySchema,
+    user: memoryLimitSummarySchema
   }),
   files: z.object({
     memory: memoryFileSummarySchema,
-    user: memoryFileSummarySchema,
-  }),
+    user: memoryFileSummarySchema
+  })
 });

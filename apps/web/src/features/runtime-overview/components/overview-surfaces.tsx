@@ -1,16 +1,16 @@
-import type { RuntimeOverviewSummary } from "@hermes-console/runtime";
+import type { RuntimeOverviewSummary } from '@hermes-console/runtime';
 
 const statusPill = (configured: boolean, live: boolean | null) => {
   if (!configured) {
-    return { label: "not configured", className: "border-border/80 bg-bg/40 text-fg-muted" };
+    return { label: 'not configured', className: 'border-border/80 bg-bg/40 text-fg-muted' };
   }
   if (live === true) {
-    return { label: "live", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" };
+    return { label: 'live', className: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' };
   }
   if (live === false) {
-    return { label: "configured", className: "border-amber-500/30 bg-amber-500/10 text-amber-200" };
+    return { label: 'configured', className: 'border-amber-500/30 bg-amber-500/10 text-amber-200' };
   }
-  return { label: "unknown", className: "border-border/80 bg-bg/40 text-fg-muted" };
+  return { label: 'unknown', className: 'border-border/80 bg-bg/40 text-fg-muted' };
 };
 
 export function OverviewSurfaces({ overview }: { overview: RuntimeOverviewSummary }) {
@@ -30,14 +30,26 @@ export function OverviewSurfaces({ overview }: { overview: RuntimeOverviewSummar
             return (
               <article key={platform.name} className="rounded-lg border border-border/70 bg-bg/40 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-[family-name:var(--font-bricolage)] text-lg font-medium text-fg-strong">{platform.name}</p>
-                  <span className={["rounded-md border px-2 py-1 font-mono text-[11px] uppercase tracking-[0.16em]", pill.className].join(" ")}>{pill.label}</span>
+                  <p className="font-[family-name:var(--font-bricolage)] text-lg font-medium text-fg-strong">
+                    {platform.name}
+                  </p>
+                  <span
+                    className={[
+                      'rounded-md border px-2 py-1 font-mono text-[11px] uppercase tracking-[0.16em]',
+                      pill.className
+                    ].join(' ')}
+                  >
+                    {pill.label}
+                  </span>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-fg-muted">{platform.detail}</p>
                 {platform.defaults.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {platform.defaults.map((item) => (
-                      <span key={item} className="rounded-md border border-border/70 bg-surface px-2 py-1 font-mono text-[11px] text-fg-muted">
+                      <span
+                        key={item}
+                        className="rounded-md border border-border/70 bg-surface px-2 py-1 font-mono text-[11px] text-fg-muted"
+                      >
                         {item}
                       </span>
                     ))}
@@ -58,7 +70,10 @@ export function OverviewSurfaces({ overview }: { overview: RuntimeOverviewSummar
           <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-fg-faint">Not configured</p>
           <div className="flex flex-wrap gap-2">
             {unconfigured.map((platform) => (
-              <span key={platform.name} className="rounded-md border border-border/70 bg-bg/40 px-2.5 py-1 text-xs text-fg-muted">
+              <span
+                key={platform.name}
+                className="rounded-md border border-border/70 bg-bg/40 px-2.5 py-1 text-xs text-fg-muted"
+              >
                 {platform.name}
               </span>
             ))}

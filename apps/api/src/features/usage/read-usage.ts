@@ -1,25 +1,27 @@
-import { readHermesInstallation } from "@/features/inventory/read-installation";
-import { createReadResult, type ReadResult } from "@/lib/read-result";
-import { readStateDbSessionsResult } from "@/features/sessions/node-session-sources";
-import type { AgentStateSessionRecord } from "@hermes-console/runtime";
-import type { HermesUsageSummary, UsageBreakdownRow, UsageSessionRecord, UsageWindowId, UsageWindowSummary } from "@hermes-console/runtime";
-import type { HermesQueryIssue } from "@hermes-console/runtime";
+import { readHermesInstallation } from '@/features/inventory/read-installation';
+import { createReadResult, type ReadResult } from '@/lib/read-result';
+import { readStateDbSessionsResult } from '@/features/sessions/node-session-sources';
+import type { AgentStateSessionRecord } from '@hermes-console/runtime';
+import type {
+  HermesUsageSummary,
+  UsageBreakdownRow,
+  UsageSessionRecord,
+  UsageWindowId,
+  UsageWindowSummary
+} from '@hermes-console/runtime';
+import type { HermesQueryIssue } from '@hermes-console/runtime';
 
 const WINDOWS: Array<{ id: UsageWindowId; label: string; days: number }> = [
-  { id: "1d", label: "1 day", days: 1 },
-  { id: "7d", label: "7 days", days: 7 },
-  { id: "30d", label: "30 days", days: 30 },
+  { id: '1d', label: '1 day', days: 1 },
+  { id: '7d', label: '7 days', days: 7 },
+  { id: '30d', label: '30 days', days: 30 }
 ];
 
 function normalizeEstimatedCost(value: number | null) {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
 
-function toUsageRecord(
-  agentId: string,
-  agentLabel: string,
-  session: AgentStateSessionRecord,
-): UsageSessionRecord {
+function toUsageRecord(agentId: string, agentLabel: string, session: AgentStateSessionRecord): UsageSessionRecord {
   return {
     id: session.id,
     agentId,
@@ -39,7 +41,7 @@ function toUsageRecord(
       session.cacheWriteTokens +
       session.reasoningTokens,
     estimatedCostUsd: session.estimatedCostUsd,
-    costStatus: session.costStatus,
+    costStatus: session.costStatus
   };
 }
 
@@ -54,11 +56,14 @@ function createEmptyBreakdownRow(key: string, label: string): UsageBreakdownRow 
     cacheWriteTokens: 0,
     reasoningTokens: 0,
     totalTokens: 0,
-    estimatedCostUsd: 0,
+    estimatedCostUsd: 0
   };
 }
 
-function aggregateBreakdown(records: UsageSessionRecord[], pick: (record: UsageSessionRecord) => { key: string; label: string }) {
+function aggregateBreakdown(
+  records: UsageSessionRecord[],
+  pick: (record: UsageSessionRecord) => { key: string; label: string }
+) {
   const buckets = new Map<string, UsageBreakdownRow>();
 
   for (const record of records) {
@@ -78,17 +83,21 @@ function aggregateBreakdown(records: UsageSessionRecord[], pick: (record: UsageS
   return Array.from(buckets.values()).sort((left, right) => right.totalTokens - left.totalTokens);
 }
 
-function summarizeWindow(window: { id: UsageWindowId; label: string; days: number }, records: UsageSessionRecord[], now: Date): UsageWindowSummary {
+function summarizeWindow(
+  window: { id: UsageWindowId; label: string; days: number },
+  records: UsageSessionRecord[],
+  now: Date
+): UsageWindowSummary {
   const cutoffMs = now.getTime() - window.days * 24 * 60 * 60 * 1000;
   const filtered = records.filter((record) => new Date(record.startedAt).getTime() >= cutoffMs);
 
   const byModel = aggregateBreakdown(filtered, (record) => ({
-    key: record.model ?? "unknown",
-    label: record.model ?? "unknown",
+    key: record.model ?? 'unknown',
+    label: record.model ?? 'unknown'
   }));
   const byAgent = aggregateBreakdown(filtered, (record) => ({
     key: record.agentId,
-    label: record.agentLabel,
+    label: record.agentLabel
   }));
 
   return {
@@ -106,13 +115,11 @@ function summarizeWindow(window: { id: UsageWindowId; label: string; days: numbe
     topModel: byModel[0] ?? null,
     topAgent: byAgent[0] ?? null,
     byModel,
-    byAgent,
+    byAgent
   };
 }
 
-export function readHermesUsageResult(
-  now = new Date(),
-): ReadResult<HermesUsageSummary> {
+export function readHermesUsageResult(now = new Date()): ReadResult<HermesUsageSummary> {
   const installation = readHermesInstallation();
   const agents = installation.agents.filter((agent) => agent.presence.stateDb);
   const issues: HermesQueryIssue[] = [];
@@ -121,21 +128,15 @@ export function readHermesUsageResult(
     const stateSessions = readStateDbSessionsResult(agent.rootPath);
     issues.push(...stateSessions.issues);
 
-    return stateSessions.data.map((session) =>
-      toUsageRecord(agent.id, agent.label, session),
-    );
+    return stateSessions.data.map((session) => toUsageRecord(agent.id, agent.label, session));
   });
 
   return createReadResult({
     data: {
       loadedAt: now.toISOString(),
       windows: WINDOWS.map((window) => summarizeWindow(window, records, now)),
-      availableWindows: WINDOWS.map((window) => window.id),
+      availableWindows: WINDOWS.map((window) => window.id)
     },
-    issues,
+    issues
   });
-}
-
-export function readHermesUsage(now = new Date()): HermesUsageSummary {
-  return readHermesUsageResult(now).data;
 }

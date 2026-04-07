@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export type SessionAgentRef = {
   id: string;
   label: string;
   rootPath: string;
-  source: "root" | "profile";
+  source: 'root' | 'profile';
 };
 
 export type MessagingSessionOrigin = {
@@ -69,7 +69,7 @@ export type HermesSessionSummary = {
   id: string;
   agentId: string;
   agentLabel: string;
-  agentSource: "root" | "profile";
+  agentSource: 'root' | 'profile';
   agentRootPath: string;
   sessionId: string;
   sessionKey: string | null;
@@ -127,16 +127,13 @@ export type MessagingSessionRecordSource = {
   origin?: MessagingSessionOriginSource | null | undefined;
 };
 
-export type MessagingSessionIndexSource = Record<
-  string,
-  MessagingSessionRecordSource
->;
+export type MessagingSessionIndexSource = Record<string, MessagingSessionRecordSource>;
 
 export const sessionAgentRefSchema = z.object({
   id: z.string(),
   label: z.string(),
   rootPath: z.string(),
-  source: z.enum(["root", "profile"]),
+  source: z.enum(['root', 'profile'])
 });
 
 export const messagingSessionOriginSchema = z.object({
@@ -147,7 +144,7 @@ export const messagingSessionOriginSchema = z.object({
   userId: z.string().nullable(),
   userName: z.string().nullable(),
   threadId: z.string().nullable(),
-  chatTopic: z.string().nullable(),
+  chatTopic: z.string().nullable()
 });
 
 export const messagingSessionOriginSourceSchema = z.object({
@@ -158,7 +155,7 @@ export const messagingSessionOriginSourceSchema = z.object({
   user_id: z.string().nullable().optional(),
   user_name: z.string().nullable().optional(),
   thread_id: z.string().nullable().optional(),
-  chat_topic: z.string().nullable().optional(),
+  chat_topic: z.string().nullable().optional()
 });
 
 export const messagingSessionRecordSchema = z.object({
@@ -173,7 +170,7 @@ export const messagingSessionRecordSchema = z.object({
   estimatedCostUsd: z.number().nullable(),
   costStatus: z.string().nullable(),
   memoryFlushed: z.boolean().nullable(),
-  origin: messagingSessionOriginSchema.nullable(),
+  origin: messagingSessionOriginSchema.nullable()
 });
 
 export const messagingSessionRecordSourceSchema = z.object({
@@ -188,13 +185,10 @@ export const messagingSessionRecordSourceSchema = z.object({
   estimated_cost_usd: z.number().nullable().optional(),
   cost_status: z.string().nullable().optional(),
   memory_flushed: z.boolean().nullable().optional(),
-  origin: messagingSessionOriginSourceSchema.nullable().optional(),
+  origin: messagingSessionOriginSourceSchema.nullable().optional()
 });
 
-export const messagingSessionIndexSourceSchema = z.record(
-  z.string(),
-  messagingSessionRecordSourceSchema,
-);
+export const messagingSessionIndexSourceSchema = z.record(z.string(), messagingSessionRecordSourceSchema);
 
 export const agentStateSessionRecordSchema = z.object({
   id: z.string(),
@@ -215,7 +209,7 @@ export const agentStateSessionRecordSchema = z.object({
   estimatedCostUsd: z.number().nullable(),
   actualCostUsd: z.number().nullable(),
   costStatus: z.string().nullable(),
-  title: z.string().nullable(),
+  title: z.string().nullable()
 });
 
 export const agentSessionMessageRecordSchema = z.object({
@@ -225,14 +219,14 @@ export const agentSessionMessageRecordSchema = z.object({
   content: z.string().nullable(),
   toolName: z.string().nullable(),
   timestamp: z.string(),
-  tokenCount: z.number().nullable(),
+  tokenCount: z.number().nullable()
 });
 
 export const hermesSessionSummarySchema = z.object({
   id: z.string(),
   agentId: z.string(),
   agentLabel: z.string(),
-  agentSource: z.enum(["root", "profile"]),
+  agentSource: z.enum(['root', 'profile']),
   agentRootPath: z.string(),
   sessionId: z.string(),
   sessionKey: z.string().nullable(),
@@ -255,11 +249,11 @@ export const hermesSessionSummarySchema = z.object({
   hasStateTranscript: z.boolean(),
   hasMessagingMetadata: z.boolean(),
   cronJobId: z.string().nullable(),
-  cronJobName: z.string().nullable(),
+  cronJobName: z.string().nullable()
 });
 
 export const hermesSessionsIndexSchema = z.object({
   sessions: z.array(hermesSessionSummarySchema),
   agentCount: z.number(),
-  agentsWithSessions: z.number(),
+  agentsWithSessions: z.number()
 });

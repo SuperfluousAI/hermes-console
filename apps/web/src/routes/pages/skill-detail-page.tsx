@@ -1,15 +1,12 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 
-import { SkillFileViewer } from "@/features/skills/components/skill-file-viewer";
-import {
-  skillDetailQueryOptions,
-  skillLinkedFileContentQueryOptions,
-} from "@/lib/api";
+import { SkillFileViewer } from '@/features/skills/components/skill-file-viewer';
+import { skillDetailQueryOptions, skillLinkedFileContentQueryOptions } from '@/lib/api';
 
 export const SkillDetailPage = ({
   selectedLinkedFileError,
   selectedFileId,
-  skillId,
+  skillId
 }: {
   selectedLinkedFileError: string | null;
   selectedFileId: string | null;
@@ -18,17 +15,15 @@ export const SkillDetailPage = ({
   const query = useSuspenseQuery(skillDetailQueryOptions({ skillId }));
   const selectedLinkedFileQuery = useQuery({
     ...skillLinkedFileContentQueryOptions({
-      fileId: selectedFileId ?? "",
-      skillId,
+      fileId: selectedFileId ?? '',
+      skillId
     }),
     enabled: selectedFileId != null,
     refetchOnMount: false,
-    retry: false,
+    retry: false
   });
   const effectiveSelectedLinkedFileError =
-    selectedLinkedFileQuery.data == null
-      ? selectedLinkedFileQuery.error?.message ?? selectedLinkedFileError
-      : null;
+    selectedLinkedFileQuery.data == null ? (selectedLinkedFileQuery.error?.message ?? selectedLinkedFileError) : null;
 
   return (
     <SkillFileViewer

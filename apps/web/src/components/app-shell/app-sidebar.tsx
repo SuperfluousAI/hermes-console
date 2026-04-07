@@ -1,13 +1,13 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from '@tanstack/react-router';
 
-import { appRoutes } from "@/lib/navigation";
+import { appRoutes } from '@/lib/navigation';
 
 const isRouteActive = (pathname: string, href: string): boolean =>
-  href === "/" ? pathname === href : pathname.startsWith(href);
+  href === '/' ? pathname === href : pathname.startsWith(href);
 
 export function AppSidebar() {
   const pathname = useRouterState({
-    select: (state) => state.location.pathname,
+    select: (state) => state.location.pathname
   });
 
   return (
@@ -28,15 +28,13 @@ export function AppSidebar() {
               key={route.href}
               to={route.href}
               className={[
-                "relative flex items-start gap-3 rounded-md px-3 py-2 transition-colors",
-                active
-                  ? "border-l-2 border-accent bg-accent/10"
-                  : "border-l-2 border-transparent hover:bg-white/5",
-              ].join(" ")}
+                'relative flex items-start gap-3 rounded-md px-3 py-2 transition-colors',
+                active ? 'border-l-2 border-accent bg-accent/10' : 'border-l-2 border-transparent hover:bg-white/5'
+              ].join(' ')}
             >
-              <Icon className={["mt-0.5 h-4 w-4 shrink-0", active ? "text-accent" : "text-fg-muted"].join(" ")} />
+              <Icon className={['mt-0.5 h-4 w-4 shrink-0', active ? 'text-accent' : 'text-fg-muted'].join(' ')} />
               <div className="min-w-0">
-                <p className={["text-sm", active ? "font-medium text-fg-strong" : "text-fg-muted"].join(" ")}>
+                <p className={['text-sm', active ? 'font-medium text-fg-strong' : 'text-fg-muted'].join(' ')}>
                   {route.label}
                 </p>
                 <p className="text-[11px] leading-4 text-fg-faint">{route.description}</p>

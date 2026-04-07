@@ -1,5 +1,5 @@
-import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ChevronDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 type AppSelectOption = {
   value: string;
@@ -10,7 +10,7 @@ export function AppSelect({
   value,
   onChange,
   options,
-  ariaLabel,
+  ariaLabel
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -29,19 +29,19 @@ export function AppSelect({
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscape);
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen]);
 
@@ -56,7 +56,9 @@ export function AppSelect({
         className="flex w-full items-center justify-between gap-2 rounded-md border border-border bg-surface/70 px-3 py-2 text-left text-sm text-fg outline-none transition-colors hover:border-accent/40 focus:border-accent/60"
       >
         <span className="truncate">{selectedLabel}</span>
-        <ChevronDown className={["h-3.5 w-3.5 shrink-0 text-fg-faint transition-transform", isOpen ? "rotate-180" : ""].join(" ")} />
+        <ChevronDown
+          className={['h-3.5 w-3.5 shrink-0 text-fg-faint transition-transform', isOpen ? 'rotate-180' : ''].join(' ')}
+        />
       </button>
 
       {isOpen ? (
@@ -78,11 +80,9 @@ export function AppSelect({
                   setIsOpen(false);
                 }}
                 className={[
-                  "cursor-pointer px-3 py-2 text-sm transition-colors",
-                  isSelected
-                    ? "bg-accent/10 text-accent"
-                    : "text-fg-muted hover:bg-white/5 hover:text-fg",
-                ].join(" ")}
+                  'cursor-pointer px-3 py-2 text-sm transition-colors',
+                  isSelected ? 'bg-accent/10 text-accent' : 'text-fg-muted hover:bg-white/5 hover:text-fg'
+                ].join(' ')}
               >
                 {option.label}
               </li>

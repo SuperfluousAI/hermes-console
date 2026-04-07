@@ -1,33 +1,23 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from '@tanstack/react-router';
 
-import { LinkedFileKindBadge } from "@/features/skills/components/linked-file-kind-badge";
-import { SkillParseBadge } from "@/features/skills/components/skill-parse-badge";
-import type { SkillDetail } from "@hermes-console/runtime";
+import { LinkedFileKindBadge } from '@/features/skills/components/linked-file-kind-badge';
+import { SkillParseBadge } from '@/features/skills/components/skill-parse-badge';
+import type { SkillDetail } from '@hermes-console/runtime';
 
-function createSkillLink({
-  skillId,
-  linkedFileId,
-}: {
-  skillId: string;
-  linkedFileId?: string | null;
-}) {
+function createSkillLink({ skillId, linkedFileId }: { skillId: string; linkedFileId?: string | null }) {
   return {
     params: {
-      skillId,
+      skillId
     },
     search: linkedFileId
       ? {
-          file: linkedFileId,
+          file: linkedFileId
         }
-      : {},
+      : {}
   };
 }
 
-export function SkillDetailPanel({
-  detail,
-}: {
-  detail: SkillDetail | null;
-}) {
+export function SkillDetailPanel({ detail }: { detail: SkillDetail | null }) {
   if (!detail) {
     return (
       <section className="rounded-lg border border-border bg-surface/70 p-4">
@@ -91,15 +81,13 @@ export function SkillDetailPanel({
                     key={linkedFile.id}
                     {...createSkillLink({
                       skillId: detail.summary.id,
-                      linkedFileId: linkedFile.id,
+                      linkedFileId: linkedFile.id
                     })}
                     to="/skills/$skillId"
                     className={[
-                      "block rounded-md border p-3 transition-colors",
-                      isSelected
-                        ? "border-accent/60 bg-accent/5"
-                        : "border-border/70 bg-surface/70 hover:border-border",
-                    ].join(" ")}
+                      'block rounded-md border p-3 transition-colors',
+                      isSelected ? 'border-accent/60 bg-accent/5' : 'border-border/70 bg-surface/70 hover:border-border'
+                    ].join(' ')}
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <LinkedFileKindBadge kind={linkedFile.kind} />
@@ -122,7 +110,7 @@ export function SkillDetailPanel({
             <>
               <p className="mt-3 font-mono text-xs text-fg-muted">{detail.selectedLinkedFile.relativePath}</p>
               <pre className="mt-3 max-h-[28rem] overflow-auto whitespace-pre-wrap break-words text-sm leading-6 text-fg">
-                {detail.selectedLinkedFileContent ?? "This linked file could not be read as text."}
+                {detail.selectedLinkedFileContent ?? 'This linked file could not be read as text.'}
               </pre>
             </>
           ) : (

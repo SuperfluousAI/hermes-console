@@ -8,6 +8,8 @@
     "build": "pnpm --filter @hermes-console/runtime build && pnpm --filter @hermes-console/api build && pnpm --filter @hermes-console/web build",
     "start": "pnpm --filter @hermes-console/api start",
     "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "pnpm --filter @hermes-console/runtime build && pnpm -r typecheck",
     "test": "pnpm -r test"
   },
@@ -16,6 +18,7 @@
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.4.0",
+    "prettier": "^3.6.2",
     "typescript-eslint": "^8.46.1"
   }
 }

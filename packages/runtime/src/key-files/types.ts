@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { memoryReadResultSchema } from "../memory/types.js";
+import { memoryReadResultSchema } from '../memory/types.js';
 
-export type KeyFileScope = "hermes_root" | "workspace_root";
-export type KeyFileKind = "memory" | "identity" | "instruction";
+export type KeyFileScope = 'hermes_root' | 'workspace_root';
+export type KeyFileKind = 'memory' | 'identity' | 'instruction';
 
 export type KeyFileSummary = {
   id: string;
@@ -26,7 +26,7 @@ export type KeyFilesDiscoveryResult = {
 
 export type KeyFilesData = {
   keyFiles: KeyFilesDiscoveryResult;
-  memory: import("../memory/types.js").MemoryReadResult;
+  memory: import('../memory/types.js').MemoryReadResult;
 };
 
 export type KeyFileContentData = {
@@ -34,8 +34,8 @@ export type KeyFileContentData = {
   content: string | null;
 };
 
-export const keyFileScopeSchema = z.enum(["hermes_root", "workspace_root"]);
-export const keyFileKindSchema = z.enum(["memory", "identity", "instruction"]);
+export const keyFileScopeSchema = z.enum(['hermes_root', 'workspace_root']);
+export const keyFileKindSchema = z.enum(['memory', 'identity', 'instruction']);
 
 export const keyFileSummarySchema = z.object({
   id: z.string(),
@@ -45,23 +45,23 @@ export const keyFileSummarySchema = z.object({
   relativePath: z.string(),
   kind: keyFileKindSchema,
   fileSize: z.number(),
-  lastModifiedMs: z.number(),
+  lastModifiedMs: z.number()
 });
 
 export const keyFilesDiscoveryResultSchema = z.object({
   roots: z.object({
     hermesRoot: z.string(),
-    workspaceRoot: z.string(),
+    workspaceRoot: z.string()
   }),
-  files: z.array(keyFileSummarySchema),
+  files: z.array(keyFileSummarySchema)
 });
 
 export const keyFilesDataSchema = z.object({
   keyFiles: keyFilesDiscoveryResultSchema,
-  memory: memoryReadResultSchema,
+  memory: memoryReadResultSchema
 });
 
 export const keyFileContentDataSchema = z.object({
   file: keyFileSummarySchema,
-  content: z.string().nullable(),
+  content: z.string().nullable()
 });

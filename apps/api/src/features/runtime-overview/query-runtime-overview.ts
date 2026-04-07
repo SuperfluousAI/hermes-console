@@ -1,36 +1,33 @@
-import path from "node:path";
+import path from 'node:path';
 
-import { readHermesCronResult } from "@/features/cron/read-hermes-cron";
-import { readHermesInstallationResult } from "@/features/inventory/read-installation";
-import { resolveInventoryPathConfigFromEnv } from "@/features/inventory/resolve-path-config";
-import {
-  createMissingPathIssue,
-  createUnreadablePathIssue,
-} from "@/lib/query-issue-factories";
-import { readTextFileResult } from "@/lib/read-text-file-result";
-import { readHermesMemoryResult } from "@/features/memory/read-memory";
-import { readHermesSessionsResult } from "@/features/sessions/read-hermes-sessions";
-import { createHermesQueryResult } from "@hermes-console/runtime";
-import type { HermesQueryIssue, HermesQueryResult } from "@hermes-console/runtime";
-import { composeRuntimeOverview } from "@hermes-console/runtime";
+import { readHermesCronResult } from '@/features/cron/read-hermes-cron';
+import { readHermesInstallationResult } from '@/features/inventory/read-installation';
+import { resolveInventoryPathConfigFromEnv } from '@/features/inventory/resolve-path-config';
+import { createMissingPathIssue, createUnreadablePathIssue } from '@/lib/query-issue-factories';
+import { readTextFileResult } from '@/lib/read-text-file-result';
+import { readHermesMemoryResult } from '@/features/memory/read-memory';
+import { readHermesSessionsResult } from '@/features/sessions/read-hermes-sessions';
+import { createHermesQueryResult } from '@hermes-console/runtime';
+import type { HermesQueryIssue, HermesQueryResult } from '@hermes-console/runtime';
+import { composeRuntimeOverview } from '@hermes-console/runtime';
 import {
   parseChannelDirectory,
   parseConfigPosture,
   parseEnvAssignments,
   parseGatewayState,
-  parseUpdateStatus,
-} from "@hermes-console/runtime";
-import type { RuntimeOverviewSummary } from "@hermes-console/runtime";
+  parseUpdateStatus
+} from '@hermes-console/runtime';
+import type { RuntimeOverviewSummary } from '@hermes-console/runtime';
 
 function createMissingFileIssue({
   id,
   severity,
   summary,
   detail,
-  targetPath,
+  targetPath
 }: {
   id: string;
-  severity?: HermesQueryIssue["severity"];
+  severity?: HermesQueryIssue['severity'];
   summary: string;
   detail: string;
   targetPath: string;
@@ -40,7 +37,7 @@ function createMissingFileIssue({
     ...(severity == null ? {} : { severity }),
     summary,
     detail,
-    path: targetPath,
+    path: targetPath
   });
 }
 
@@ -48,7 +45,7 @@ function createUnreadableFileIssue({
   detail,
   id,
   summary,
-  targetPath,
+  targetPath
 }: {
   detail: string;
   id: string;
@@ -59,7 +56,7 @@ function createUnreadableFileIssue({
     id,
     summary,
     detail,
-    path: targetPath,
+    path: targetPath
   });
 }
 
@@ -73,11 +70,11 @@ export function readRuntimeOverviewQuery(): HermesQueryResult<RuntimeOverviewSum
   const sessions = readHermesSessionsResult();
   const cron = readHermesCronResult();
 
-  const gatewayPath = path.join(hermesRoot, "gateway_state.json");
-  const channelDirectoryPath = path.join(hermesRoot, "channel_directory.json");
-  const updatePath = path.join(hermesRoot, ".update_check");
-  const configPath = path.join(hermesRoot, "config.yaml");
-  const envPath = path.join(hermesRoot, ".env");
+  const gatewayPath = path.join(hermesRoot, 'gateway_state.json');
+  const channelDirectoryPath = path.join(hermesRoot, 'channel_directory.json');
+  const updatePath = path.join(hermesRoot, '.update_check');
+  const configPath = path.join(hermesRoot, 'config.yaml');
+  const envPath = path.join(hermesRoot, '.env');
 
   const gatewayContent = readTextFileResult(gatewayPath);
   const channelDirectoryContent = readTextFileResult(channelDirectoryPath);
@@ -85,128 +82,119 @@ export function readRuntimeOverviewQuery(): HermesQueryResult<RuntimeOverviewSum
   const configContent = readTextFileResult(configPath);
   const envContent = readTextFileResult(envPath);
 
-  const gateway = parseGatewayState(gatewayContent.content ?? "");
-  const channels = parseChannelDirectory(channelDirectoryContent.content ?? "");
-  const update = parseUpdateStatus(updateContent.content ?? "");
-  const config = parseConfigPosture(configContent.content ?? "");
-  const envEntries = parseEnvAssignments(envContent.content ?? "");
+  const gateway = parseGatewayState(gatewayContent.content ?? '');
+  const channels = parseChannelDirectory(channelDirectoryContent.content ?? '');
+  const update = parseUpdateStatus(updateContent.content ?? '');
+  const config = parseConfigPosture(configContent.content ?? '');
+  const envEntries = parseEnvAssignments(envContent.content ?? '');
 
-  const issues: HermesQueryIssue[] = [
-    ...installation.issues,
-    ...memory.issues,
-    ...sessions.issues,
-    ...cron.issues,
-  ];
+  const issues: HermesQueryIssue[] = [...installation.issues, ...memory.issues, ...sessions.issues, ...cron.issues];
 
   if (!installation.data.hermesRootExists) {
     issues.push({
-      id: "runtime-hermes-root-missing",
-      code: "missing_path",
-      severity: "error",
-      summary: "Hermes root not found",
+      id: 'runtime-hermes-root-missing',
+      code: 'missing_path',
+      severity: 'error',
+      summary: 'Hermes root not found',
       detail:
-        "Hermes Console could not find the configured Hermes state root. Set HERMES_CONSOLE_HERMES_DIR or install Hermes in the default location.",
-      path: hermesRoot,
+        'Hermes Console could not find the configured Hermes state root. Set HERMES_CONSOLE_HERMES_DIR or install Hermes in the default location.',
+      path: hermesRoot
     });
   }
 
-  if (configContent.status === "missing") {
+  if (configContent.status === 'missing') {
     issues.push(
       createMissingFileIssue({
-        id: "runtime-config-missing",
-        summary: "config.yaml not found",
-        detail:
-          "Runtime defaults are partially unknown because the Hermes config file was not found.",
-        targetPath: configPath,
-      }),
+        id: 'runtime-config-missing',
+        summary: 'config.yaml not found',
+        detail: 'Runtime defaults are partially unknown because the Hermes config file was not found.',
+        targetPath: configPath
+      })
     );
   }
-  if (configContent.status === "unreadable") {
+  if (configContent.status === 'unreadable') {
     issues.push(
       createUnreadableFileIssue({
-        id: "runtime-config-unreadable",
-        summary: "config.yaml could not be read",
+        id: 'runtime-config-unreadable',
+        summary: 'config.yaml could not be read',
         detail: configContent.detail,
-        targetPath: configPath,
-      }),
+        targetPath: configPath
+      })
     );
   }
 
-  if (gatewayContent.status === "missing") {
+  if (gatewayContent.status === 'missing') {
     issues.push(
       createMissingFileIssue({
-        id: "runtime-gateway-state-missing",
-        summary: "gateway_state.json not found",
-        detail:
-          "Gateway state is currently inferred as unknown because the runtime snapshot file is missing.",
-        targetPath: gatewayPath,
-      }),
+        id: 'runtime-gateway-state-missing',
+        summary: 'gateway_state.json not found',
+        detail: 'Gateway state is currently inferred as unknown because the runtime snapshot file is missing.',
+        targetPath: gatewayPath
+      })
     );
   }
-  if (gatewayContent.status === "unreadable") {
+  if (gatewayContent.status === 'unreadable') {
     issues.push(
       createUnreadableFileIssue({
-        id: "runtime-gateway-state-unreadable",
-        summary: "gateway_state.json could not be read",
+        id: 'runtime-gateway-state-unreadable',
+        summary: 'gateway_state.json could not be read',
         detail: gatewayContent.detail,
-        targetPath: gatewayPath,
-      }),
+        targetPath: gatewayPath
+      })
     );
   }
 
-  if (channelDirectoryContent.status === "unreadable") {
+  if (channelDirectoryContent.status === 'unreadable') {
     issues.push(
       createUnreadableFileIssue({
-        id: "runtime-channel-directory-unreadable",
-        summary: "channel_directory.json could not be read",
+        id: 'runtime-channel-directory-unreadable',
+        summary: 'channel_directory.json could not be read',
         detail: channelDirectoryContent.detail,
-        targetPath: channelDirectoryPath,
-      }),
+        targetPath: channelDirectoryPath
+      })
     );
   }
-  if (channelDirectoryContent.status === "missing") {
+  if (channelDirectoryContent.status === 'missing') {
     issues.push(
       createMissingFileIssue({
-        id: "runtime-channel-directory-missing",
-        severity: "info",
-        summary: "channel_directory.json not found",
-        detail:
-          "Connected surface counts may be incomplete because the channel directory snapshot file was not found.",
-        targetPath: channelDirectoryPath,
-      }),
+        id: 'runtime-channel-directory-missing',
+        severity: 'info',
+        summary: 'channel_directory.json not found',
+        detail: 'Connected surface counts may be incomplete because the channel directory snapshot file was not found.',
+        targetPath: channelDirectoryPath
+      })
     );
   }
 
-  if (updateContent.status === "missing") {
+  if (updateContent.status === 'missing') {
     issues.push({
-      id: "runtime-update-cache-missing",
-      code: "missing_path",
-      severity: "info",
-      summary: "Update cache not found",
-      detail:
-        "Update drift will remain unknown until Hermes writes its .update_check cache.",
-      path: updatePath,
+      id: 'runtime-update-cache-missing',
+      code: 'missing_path',
+      severity: 'info',
+      summary: 'Update cache not found',
+      detail: 'Update drift will remain unknown until Hermes writes its .update_check cache.',
+      path: updatePath
     });
   }
-  if (updateContent.status === "unreadable") {
+  if (updateContent.status === 'unreadable') {
     issues.push(
       createUnreadableFileIssue({
-        id: "runtime-update-cache-unreadable",
-        summary: ".update_check could not be read",
+        id: 'runtime-update-cache-unreadable',
+        summary: '.update_check could not be read',
         detail: updateContent.detail,
-        targetPath: updatePath,
-      }),
+        targetPath: updatePath
+      })
     );
   }
 
-  if (envContent.status === "unreadable") {
+  if (envContent.status === 'unreadable') {
     issues.push(
       createUnreadableFileIssue({
-        id: "runtime-env-unreadable",
-        summary: ".env could not be read",
+        id: 'runtime-env-unreadable',
+        summary: '.env could not be read',
         detail: envContent.detail,
-        targetPath: envPath,
-      }),
+        targetPath: envPath
+      })
     );
   }
 
@@ -219,23 +207,21 @@ export function readRuntimeOverviewQuery(): HermesQueryResult<RuntimeOverviewSum
     memory: memory.data,
     sessions: sessions.data,
     cron: cron.data,
-    envEntries,
+    envEntries
   });
 
   const status =
-    installation.data.status === "missing"
-      ? "missing"
-      : issues.some(
-            (issue) =>
-              issue.severity === "warning" || issue.severity === "error",
-          ) || installation.data.status === "partial"
-        ? "partial"
-        : "ready";
+    installation.data.status === 'missing'
+      ? 'missing'
+      : issues.some((issue) => issue.severity === 'warning' || issue.severity === 'error') ||
+          installation.data.status === 'partial'
+        ? 'partial'
+        : 'ready';
 
   return createHermesQueryResult({
     data: overview,
     capturedAt,
     status,
-    issues,
+    issues
   });
 }

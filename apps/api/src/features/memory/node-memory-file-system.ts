@@ -1,6 +1,6 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
-import type { MemoryFileSystem } from "@/features/memory/read-memory-files";
+import type { MemoryFileSystem } from '@/features/memory/read-memory-files';
 
 export const nodeMemoryFileSystem: MemoryFileSystem = {
   pathExists(targetPath) {
@@ -16,9 +16,9 @@ export const nodeMemoryFileSystem: MemoryFileSystem = {
         return null;
       }
 
-      return fs.readFileSync(targetPath, "utf8");
+      return fs.readFileSync(targetPath, 'utf8');
     } catch {
       return null;
     }
-  },
+  }
 };

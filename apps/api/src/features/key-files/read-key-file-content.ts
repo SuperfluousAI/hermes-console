@@ -1,6 +1,6 @@
-import { nodeKeyFilesFileSystem } from "@/features/key-files/node-key-files-file-system";
-import { readKeyFiles } from "@/features/key-files/read-key-files";
-import type { KeyFileContentData } from "@hermes-console/runtime";
+import { nodeKeyFilesFileSystem } from '@/features/key-files/node-key-files-file-system';
+import { readKeyFiles } from '@/features/key-files/read-key-files';
+import type { KeyFileContentData } from '@hermes-console/runtime';
 
 export function readKeyFileContent(fileId: string): KeyFileContentData | null {
   const result = readKeyFiles();
@@ -14,6 +14,6 @@ export function readKeyFileContent(fileId: string): KeyFileContentData | null {
 
   return {
     file,
-    content,
+    content
   };
 }

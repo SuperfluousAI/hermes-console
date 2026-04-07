@@ -2,7 +2,7 @@ type CronSummaryItem = {
   label: string;
   value: string;
   detail?: string;
-  tone?: "default" | "muted";
+  tone?: 'default' | 'muted';
 };
 
 export function CronSummaryGrid({ items }: { items: CronSummaryItem[] }) {
@@ -11,10 +11,12 @@ export function CronSummaryGrid({ items }: { items: CronSummaryItem[] }) {
       {items.map((item) => (
         <article key={item.label} className="rounded-lg border border-border bg-surface/70 p-4">
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-faint">{item.label}</p>
-          <p className={[
-            "mt-3 font-[family-name:var(--font-bricolage)] text-2xl font-semibold tracking-tight",
-            item.tone === "muted" ? "text-fg" : "text-fg-strong",
-          ].join(" ")}>
+          <p
+            className={[
+              'mt-3 font-[family-name:var(--font-bricolage)] text-2xl font-semibold tracking-tight',
+              item.tone === 'muted' ? 'text-fg' : 'text-fg-strong'
+            ].join(' ')}
+          >
             {item.value}
           </p>
           {item.detail ? <p className="mt-2 text-sm leading-6 text-fg-muted">{item.detail}</p> : null}

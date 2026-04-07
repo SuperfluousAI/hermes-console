@@ -1,5 +1,5 @@
 export const compareSkillCategories = (left: string, right: string) => {
-  const priority = ["workspace", "workflow"];
+  const priority = ['workspace', 'workflow'];
   const leftIndex = priority.indexOf(left);
   const rightIndex = priority.indexOf(right);
 

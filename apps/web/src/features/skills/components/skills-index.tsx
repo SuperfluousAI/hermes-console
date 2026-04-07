@@ -1,14 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from '@tanstack/react-router';
 
-import { compareSkillCategories } from "@hermes-console/runtime";
-import { SkillParseBadge } from "@/features/skills/components/skill-parse-badge";
-import type { SkillSummary } from "@hermes-console/runtime";
+import { compareSkillCategories } from '@hermes-console/runtime';
+import { SkillParseBadge } from '@/features/skills/components/skill-parse-badge';
+import type { SkillSummary } from '@hermes-console/runtime';
 
-export function SkillsIndex({
-  skills,
-}: {
-  skills: SkillSummary[];
-}) {
+export function SkillsIndex({ skills }: { skills: SkillSummary[] }) {
   if (skills.length === 0) {
     return (
       <section className="rounded-lg border border-border bg-surface/70 p-4">
@@ -25,7 +21,7 @@ export function SkillsIndex({
       bucket.push(skill);
       accumulator[skill.category] = bucket;
       return accumulator;
-    }, {}),
+    }, {})
   ).sort((left, right) => compareSkillCategories(left[0], right[0]));
 
   return (
@@ -37,7 +33,7 @@ export function SkillsIndex({
               {category}
             </h3>
             <p className="mt-2 text-sm leading-6 text-fg-muted">
-              {categorySkills.length} skill{categorySkills.length === 1 ? "" : "s"}
+              {categorySkills.length} skill{categorySkills.length === 1 ? '' : 's'}
             </p>
           </div>
 
@@ -46,7 +42,7 @@ export function SkillsIndex({
               <Link
                 key={skill.id}
                 params={{
-                  skillId: skill.id,
+                  skillId: skill.id
                 }}
                 to="/skills/$skillId"
                 className="block rounded-md border border-border/70 bg-bg/40 p-3 transition-colors hover:border-border"

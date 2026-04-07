@@ -1,28 +1,22 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from '@tanstack/react-router';
 import type {
   HermesQueryIssue,
   HermesQueryStatus,
   SkillDocumentDetail,
   SkillLinkedFileContent,
-  SnapshotEnvelope,
-} from "@hermes-console/runtime";
+  SnapshotEnvelope
+} from '@hermes-console/runtime';
 
-import { QueryStatusCard } from "@/components/ui/query-status-card";
-import { LinkedFileKindBadge } from "@/features/skills/components/linked-file-kind-badge";
-import { SkillParseBadge } from "@/features/skills/components/skill-parse-badge";
+import { QueryStatusCard } from '@/components/ui/query-status-card';
+import { LinkedFileKindBadge } from '@/features/skills/components/linked-file-kind-badge';
+import { SkillParseBadge } from '@/features/skills/components/skill-parse-badge';
 
-function createViewerLink({
-  skillId,
-  file,
-}: {
-  skillId: string;
-  file: string;
-}) {
+function createViewerLink({ skillId, file }: { skillId: string; file: string }) {
   return {
     params: {
-      skillId,
+      skillId
     },
-    search: file === "skill" ? {} : { file },
+    search: file === 'skill' ? {} : { file }
   };
 }
 
@@ -32,7 +26,7 @@ export function SkillFileViewer({
   detailStatus,
   selectedFileId,
   selectedLinkedFile,
-  selectedLinkedFileError,
+  selectedLinkedFileError
 }: {
   detail: SkillDocumentDetail;
   detailIssues: HermesQueryIssue[];
@@ -41,39 +35,32 @@ export function SkillFileViewer({
   selectedLinkedFile: SnapshotEnvelope<SkillLinkedFileContent> | null;
   selectedLinkedFileError: string | null;
 }) {
-  const effectiveSelectedFileId = selectedFileId ?? "skill";
+  const effectiveSelectedFileId = selectedFileId ?? 'skill';
   const files = [
     {
-      id: "skill",
-      title: "SKILL.md",
+      id: 'skill',
+      title: 'SKILL.md',
       subtitle: detail.summary.skillPath,
-      badge: null,
+      badge: null
     },
     ...detail.summary.linkedFiles.map((linkedFile) => ({
       id: linkedFile.id,
       title: linkedFile.relativePath,
       subtitle: linkedFile.absolutePath,
-      badge: <LinkedFileKindBadge kind={linkedFile.kind} key={linkedFile.id} />,
-    })),
+      badge: <LinkedFileKindBadge kind={linkedFile.kind} key={linkedFile.id} />
+    }))
   ];
 
   const previewTitle =
-    effectiveSelectedFileId === "skill"
-      ? "SKILL.md"
-      : selectedLinkedFile?.data.file.relativePath ?? "Linked file";
+    effectiveSelectedFileId === 'skill' ? 'SKILL.md' : (selectedLinkedFile?.data.file.relativePath ?? 'Linked file');
   const previewContent =
-    effectiveSelectedFileId === "skill"
+    effectiveSelectedFileId === 'skill'
       ? detail.rawContent
-      : selectedLinkedFile?.data.content ??
-        "This linked file could not be read as text.";
+      : (selectedLinkedFile?.data.content ?? 'This linked file could not be read as text.');
 
   return (
     <div className="space-y-8">
-      <QueryStatusCard
-        title="Skill detail quality"
-        status={detailStatus}
-        issues={detailIssues}
-      />
+      <QueryStatusCard title="Skill detail quality" status={detailStatus} issues={detailIssues} />
       <section className="max-w-3xl">
         <div className="mb-4">
           <Link
@@ -128,15 +115,13 @@ export function SkillFileViewer({
                   key={file.id}
                   {...createViewerLink({
                     skillId: detail.summary.id,
-                    file: file.id,
+                    file: file.id
                   })}
                   to="/skills/$skillId"
                   className={[
-                    "block rounded-md border p-3 transition-colors",
-                    isSelected
-                      ? "border-accent/60 bg-accent/5"
-                      : "border-border/70 bg-bg/40 hover:border-border",
-                  ].join(" ")}
+                    'block rounded-md border p-3 transition-colors',
+                    isSelected ? 'border-accent/60 bg-accent/5' : 'border-border/70 bg-bg/40 hover:border-border'
+                  ].join(' ')}
                 >
                   <div className="flex items-start justify-between gap-3 min-w-0">
                     <div className="min-w-0 flex-1">
@@ -158,14 +143,14 @@ export function SkillFileViewer({
             <h3 className="min-w-0 break-all font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">
               {previewTitle}
             </h3>
-            {effectiveSelectedFileId !== "skill" && selectedLinkedFile?.data.file ? (
+            {effectiveSelectedFileId !== 'skill' && selectedLinkedFile?.data.file ? (
               <LinkedFileKindBadge kind={selectedLinkedFile.data.file.kind} />
             ) : null}
           </div>
-          {effectiveSelectedFileId !== "skill" && selectedLinkedFile ? (
+          {effectiveSelectedFileId !== 'skill' && selectedLinkedFile ? (
             <QueryStatusCard
               title="Linked file quality"
-              status={selectedLinkedFile?.meta.dataStatus ?? "ready"}
+              status={selectedLinkedFile?.meta.dataStatus ?? 'ready'}
               issues={selectedLinkedFile?.issues ?? []}
             />
           ) : null}
