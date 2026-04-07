@@ -80,6 +80,13 @@ Copy `.env.example` to `.env.local` and adjust as needed.
   <img src="./apps/web/public/readme/files.png" width="45%" alt="Files" />
 </p>
 
+## Roadmap
+
+- **Keyboard-first navigation** — navigate everything without touching a mouse
+- **Global search** — find anything across sessions, skills, files, and cron jobs from one place
+- **Richer filters** — deeper agent-by-agent views, date ranges, status grouping
+- **More surfaces** — agent-specific detail pages, log tailing, config diffing
+
 ## Contributing
 
 Found a bug? Have a feature idea? Open an issue or PR. Feedback welcome.
