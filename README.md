@@ -36,6 +36,17 @@ A read-only web UI that inspects your local Hermes state directly from disk. No 
 
 If you run Hermes locally and want to understand your setup without digging through files and CLI output — this does that. One screen, live data, calm UX, no theatre.
 
+## Running Hermes Console
+
+Hermes Console has two normal ways to run:
+
+- `pnpm dev` for local development with Vite and the local API
+- `pnpm build && pnpm start` for a built local app served by the API
+
+The API intentionally binds to `127.0.0.1`. Hermes Console is local-only by default, not a LAN-hosted dashboard.
+
+Agent discovery comes from the configured Hermes root. If you have multiple Hermes profiles under `~/.hermes/profiles`, Hermes Console will pick those up automatically from `HERMES_CONSOLE_HERMES_DIR` or the default `~/.hermes`.
+
 ## Quick start
 
 ```bash
@@ -46,13 +57,31 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Open the URL Vite prints (default `http://localhost:5173`).
+Open `http://localhost:5173`.
 
-For a production build:
+If you want the Files view to include project-level instruction and context files, set a workspace root in `.env.local`:
+
+```bash
+HERMES_CONSOLE_WORKSPACE_DIR=/absolute/path/to/your/workspace
+```
+
+That opt-in scan is what lets Hermes Console pick up bounded workspace files like `AGENTS.md`, `README.md`, and similar markdown or instruction docs outside `~/.hermes`.
+
+This workspace root is for project file discovery, not agent discovery. Multi-agent views come from the Hermes root itself, especially `~/.hermes/profiles`.
+
+What that does:
+
+- starts the runtime package in watch mode
+- starts the local API on the configured `PORT`
+- starts the Vite web app and proxies `/api` to that local API
+
+For a built local run:
 
 ```bash
 pnpm build && pnpm start
 ```
+
+That serves the built web app and API together from the configured `PORT`, usually `http://127.0.0.1:3940`.
 
 ## Configuration
 
@@ -61,9 +90,24 @@ Copy `.env.example` to `.env.local` and adjust as needed.
 | Variable                       | Default     | Description                          |
 | ------------------------------ | ----------- | ------------------------------------ |
 | `HERMES_CONSOLE_HERMES_DIR`    | `~/.hermes` | Hermes state root                    |
-| `HERMES_CONSOLE_WORKSPACE_DIR` | unset       | Extra workspace root for file discovery |
+| `HERMES_CONSOLE_WORKSPACE_DIR` | unset       | Optional workspace root for bounded project file discovery |
 | `HERMES_CONSOLE_HERMES_BIN`    | `hermes`    | Hermes CLI path override             |
 | `PORT`                         | `3940`      | API port                             |
+
+The defaults assume a standard local Hermes setup under `~/.hermes`.
+Set `HERMES_CONSOLE_WORKSPACE_DIR` if you want the Files view to include high-signal project docs outside the Hermes root.
+
+## Remote access
+
+Hermes Console does not ship with built-in auth and does not listen on your LAN by default.
+
+If you want to reach it from another machine, expose it intentionally through something you control, such as:
+
+- a Tailscale serve/proxy setup
+- an SSH tunnel
+- an authenticated reverse proxy on your local network
+
+Do not expose Hermes Console directly to the public internet without putting proper access control in front of it.
 
 ## Screenshots
 
@@ -79,13 +123,6 @@ Copy `.env.example` to `.env.local` and adjust as needed.
   <img src="./apps/web/public/readme/usage.png" width="45%" alt="Usage" />
   <img src="./apps/web/public/readme/files.png" width="45%" alt="Files" />
 </p>
-
-## Roadmap
-
-- **Keyboard-first navigation** — navigate everything without touching a mouse
-- **Global search** — find anything across sessions, skills, files, and cron jobs from one place
-- **Richer filters** — deeper agent-by-agent views, date ranges, status grouping
-- **More surfaces** — agent-specific detail pages, log tailing, config diffing
 
 ## Contributing
 
