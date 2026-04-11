@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { AppBreadcrumbs } from '@/components/ui/app-breadcrumbs';
 import { CopyButton } from '@/components/ui/copy-button';
+import { getCronJobStateBadge, getCronOutputBadge } from '@/features/cron/lib/cron-job-presentation';
 import type { HermesCronJobDetail, HermesCronJobSummary } from '@hermes-console/runtime';
 
 function formatTimestamp(value: string | null): string {
@@ -40,32 +41,6 @@ function formatRecentHealth(job: HermesCronJobSummary): string {
   return `${job.recentSuccessCount}/${job.recentObservedRunCount} succeeded`;
 }
 
-function statusBadgeClass(tone: HermesCronJobSummary['statusTone']): string {
-  switch (tone) {
-    case 'error':
-      return 'border-red-500/30 bg-red-500/10 text-red-200';
-    case 'warning':
-      return 'border-amber-500/30 bg-amber-500/10 text-amber-200';
-    case 'muted':
-      return 'border-border/80 bg-bg/40 text-fg-muted';
-    default:
-      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
-  }
-}
-
-function attentionBadgeClass(level: HermesCronJobSummary['attentionLevel']): string {
-  switch (level) {
-    case 'critical':
-      return 'border-red-500/30 bg-red-500/10 text-red-200';
-    case 'warning':
-      return 'border-amber-500/30 bg-amber-500/10 text-amber-200';
-    case 'muted':
-      return 'border-border/80 bg-bg/40 text-fg-muted';
-    default:
-      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
-  }
-}
-
 function outputBadgeClass(state: HermesCronJobSummary['latestOutputState']): string {
   if (state === 'contentful') {
     return 'border-sky-500/30 bg-sky-500/10 text-sky-200';
@@ -78,31 +53,7 @@ function outputBadgeClass(state: HermesCronJobSummary['latestOutputState']): str
   return 'border-amber-500/30 bg-amber-500/10 text-amber-200';
 }
 
-function cadenceLabel(job: HermesCronJobSummary): string {
-  if (job.scheduleKind === 'once') {
-    return 'one-shot';
-  }
-
-  if (job.scheduleKind === 'interval') {
-    return 'interval';
-  }
-
-  if (job.scheduleKind === 'cron') {
-    return 'cron';
-  }
-
-  return 'schedule';
-}
-
-function MetadataBlock({
-  label,
-  value,
-  action
-}: {
-  label: string;
-  value: string;
-  action?: ReactNode;
-}) {
+function MetadataBlock({ label, value, action }: { label: string; value: string; action?: ReactNode }) {
   return (
     <div>
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-faint">{label}</p>
@@ -114,15 +65,13 @@ function MetadataBlock({
   );
 }
 
-function DetailChip({
-  className,
-  label
-}: {
-  className: string;
-  label: string;
-}) {
+function DetailChip({ className, label }: { className: string; label: string }) {
   return (
-    <span className={['rounded-full border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em]', className].join(' ')}>
+    <span
+      className={['rounded-full border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em]', className].join(
+        ' '
+      )}
+    >
       {label}
     </span>
   );
@@ -234,6 +183,8 @@ function OutputsSection({ detail }: { detail: HermesCronJobDetail }) {
 
 export function CronDetailView({ detail }: { detail: HermesCronJobDetail }) {
   const { job } = detail;
+  const stateBadge = getCronJobStateBadge(job);
+  const outputBadge = getCronOutputBadge(job);
   const repeatProgress =
     job.repeatCompleted == null
       ? null
@@ -243,23 +194,17 @@ export function CronDetailView({ detail }: { detail: HermesCronJobDetail }) {
 
   return (
     <div className="space-y-8">
-      <section className="max-w-4xl">
+      <section className="max-w-5xl space-y-4">
         <AppBreadcrumbs items={[{ label: 'Cron', to: '/cron' }, { label: job.name }]} />
         <div className="flex flex-wrap items-center gap-3">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Cron</p>
           <DetailChip className="border-accent/30 bg-accent/10 text-accent" label={job.agentLabel} />
-          <DetailChip
-            className={statusBadgeClass(job.statusTone)}
-            label={job.lastStatus ?? job.state ?? (job.enabled ? 'scheduled' : 'disabled')}
-          />
-          <DetailChip className={attentionBadgeClass(job.attentionLevel)} label={job.attentionLevel.replace('_', ' ')} />
-          <DetailChip className="border-border/80 bg-bg/40 text-fg-muted" label={cadenceLabel(job)} />
-          <DetailChip className={outputBadgeClass(job.latestOutputState)} label={job.latestOutputState} />
+          {stateBadge ? <DetailChip className={stateBadge.className} label={stateBadge.label} /> : null}
+          {outputBadge ? <DetailChip className={outputBadge.className} label={outputBadge.label} /> : null}
         </div>
-        <h2 className="mt-3 font-[family-name:var(--font-bricolage)] text-xl font-semibold tracking-tight text-fg-strong sm:text-2xl">
+        <h2 className="font-[family-name:var(--font-bricolage)] text-xl font-semibold tracking-tight text-fg-strong sm:text-2xl">
           {job.name}
         </h2>
-        <p className="mt-3 text-sm leading-7 text-fg-muted">
+        <p className="text-sm leading-7 text-fg-muted">
           Delivery target {job.deliver ?? 'unknown'} · schedule {job.scheduleDisplay}
         </p>
       </section>
@@ -284,7 +229,7 @@ export function CronDetailView({ detail }: { detail: HermesCronJobDetail }) {
           {
             label: 'created',
             value: formatTimestamp(job.createdAt),
-            detail: repeatProgress ?? (job.originChatName ?? 'No origin context')
+            detail: repeatProgress ?? job.originChatName ?? 'No origin context'
           }
         ].map((item) => (
           <article key={item.label} className="rounded-lg border border-border bg-surface/70 p-4">
@@ -353,7 +298,10 @@ export function CronDetailView({ detail }: { detail: HermesCronJobDetail }) {
               {
                 label: 'failure streak',
                 value: String(job.failureStreak),
-                detail: job.failureStreak > 0 ? 'Consecutive failed runs from the latest observation.' : 'No active failure streak.'
+                detail:
+                  job.failureStreak > 0
+                    ? 'Consecutive failed runs from the latest observation.'
+                    : 'No active failure streak.'
               },
               {
                 label: 'last success',
@@ -388,7 +336,9 @@ export function CronDetailView({ detail }: { detail: HermesCronJobDetail }) {
 
           <div className="mt-4">
             <div className="mb-3">
-              <p className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">Upcoming runs</p>
+              <p className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">
+                Upcoming runs
+              </p>
               <p className="mt-2 text-sm leading-6 text-fg-muted">Server-derived occurrences for the next 7 days.</p>
             </div>
             <UpcomingRunsSection detail={detail} />
@@ -419,7 +369,8 @@ export function CronDetailView({ detail }: { detail: HermesCronJobDetail }) {
                 Recent outputs
               </h3>
               <p className="mt-2 text-sm leading-6 text-fg-muted">
-                Saved response files for this job. Output presence is useful, but it is not the same as execution success.
+                Saved response files for this job. Output presence is useful, but it is not the same as execution
+                success.
               </p>
             </div>
             <p className="text-xs text-fg-muted">{detail.recentOutputCount} files</p>

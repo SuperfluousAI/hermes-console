@@ -19,18 +19,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onOpenSidebar={() => setIsSidebarOpen(true)}
         />
-        <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 lg:px-6 lg:py-5">{children}</main>
-        <footer className="mx-auto mt-8 w-full max-w-6xl border-t border-border/40 px-4 py-6 text-xs text-fg-faint lg:px-6">
+        <main className="mx-auto flex w-full max-w-[112rem] flex-col gap-5 px-4 py-4 lg:px-6 lg:py-5 xl:px-8">
+          {children}
+        </main>
+        <footer className="mx-auto mt-8 w-full max-w-[112rem] border-t border-border/40 px-4 py-6 text-xs text-fg-faint lg:px-6 xl:px-8">
           Built by{' '}
           <a
             href="https://shan8851.com"
             target="_blank"
             rel="noreferrer"
             className="text-fg-muted underline decoration-border underline-offset-4 transition-colors hover:text-fg"
-            >
-              Shan
-            </a>
-          </footer>
+          >
+            Shan
+          </a>
+        </footer>
       </div>
 
       {isSidebarOpen ? (
@@ -42,7 +44,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           <div className="relative z-10 h-full max-w-[18rem]">
-            <AppSidebar mode="drawer" onNavigate={() => setIsSidebarOpen(false)} onRequestClose={() => setIsSidebarOpen(false)} />
+            <AppSidebar
+              mode="drawer"
+              onNavigate={() => setIsSidebarOpen(false)}
+              onRequestClose={() => setIsSidebarOpen(false)}
+            />
           </div>
         </div>
       ) : null}

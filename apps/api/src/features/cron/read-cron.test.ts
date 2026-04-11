@@ -128,7 +128,40 @@ describe('normalizeCronJobs', () => {
       now: '2026-04-12T12:00:00.000Z'
     });
 
-    expect(summaries[0]?.upcomingRuns).toHaveLength(7);
+    expect(summaries[0]?.upcomingRuns.length ?? 0).toBeGreaterThan(100);
+    expect(summaries[0]?.upcomingRuns[0]?.scheduledAt).toBe('2026-04-12T12:15:00.000Z');
+    expect(summaries[0]?.upcomingRuns[1]?.scheduledAt).toBe('2026-04-12T12:30:00.000Z');
+  });
+
+  it('falls back to schedule display when Hermes omits a dedicated cron expression field', () => {
+    const summaries = normalizeCronJobs({
+      agent: {
+        id: 'default',
+        label: 'Default',
+        rootPath: '/tmp/hermes',
+        source: 'root'
+      },
+      rawJobs: {
+        jobs: [
+          {
+            id: 'observer',
+            enabled: true,
+            schedule_display: '*/15 * * * *',
+            next_run_at: '2026-04-12T12:15:00.000Z',
+            prompt: 'Observe alerts',
+            schedule: {
+              kind: 'cron',
+              display: '*/15 * * * *'
+            }
+          }
+        ]
+      },
+      outputsByJobId: new Map(),
+      runsByJobId: new Map(),
+      now: '2026-04-12T12:00:00.000Z'
+    });
+
+    expect(summaries[0]?.upcomingRuns.length ?? 0).toBeGreaterThan(100);
     expect(summaries[0]?.upcomingRuns[0]?.scheduledAt).toBe('2026-04-12T12:15:00.000Z');
     expect(summaries[0]?.upcomingRuns[1]?.scheduledAt).toBe('2026-04-12T12:30:00.000Z');
   });

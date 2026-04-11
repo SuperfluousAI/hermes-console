@@ -15,8 +15,8 @@ import type {
 import { normalizeDateString } from '@hermes-console/runtime';
 
 const RECENT_RUN_WINDOW_SIZE = 10;
-const UPCOMING_RUN_LIMIT = 7;
 const UPCOMING_RUN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_UPCOMING_RUNS_PER_JOB = 2_048;
 
 function normalizeLastStatus(value: unknown) {
   return typeof value === 'string' ? value : null;
@@ -143,7 +143,13 @@ function resolveAttentionLevel({
     return 'critical';
   }
 
-  if (overdue || recentFailureCount > 0 || isFailureStatus(lastStatus) || Boolean(lastError) || Boolean(lastDeliveryError)) {
+  if (
+    overdue ||
+    recentFailureCount > 0 ||
+    isFailureStatus(lastStatus) ||
+    Boolean(lastError) ||
+    Boolean(lastDeliveryError)
+  ) {
     return 'warning';
   }
 
@@ -155,11 +161,11 @@ function resolveScheduleExpression(job: CronJobSourceRecord) {
   const scheduleKind = normalizeScheduleKind(schedule?.kind ?? null);
 
   if (scheduleKind === 'cron') {
-    return schedule?.expr ?? null;
+    return schedule?.expr ?? schedule?.display ?? job.schedule_display ?? null;
   }
 
   if (scheduleKind === 'interval') {
-    return typeof schedule?.minutes === 'number' ? `every ${schedule.minutes}m` : schedule?.display ?? null;
+    return typeof schedule?.minutes === 'number' ? `every ${schedule.minutes}m` : (schedule?.display ?? null);
   }
 
   if (scheduleKind === 'once') {
@@ -167,6 +173,39 @@ function resolveScheduleExpression(job: CronJobSourceRecord) {
   }
 
   return schedule?.display ?? null;
+}
+
+function extractCronParts(rawValue: string | null): { expr: string; tz: string | undefined } | null {
+  if (!rawValue) {
+    return null;
+  }
+
+  const trimmed = rawValue.trim();
+
+  if (!trimmed || trimmed.startsWith('@') || trimmed.toLowerCase().startsWith('every ')) {
+    return null;
+  }
+
+  const withoutPrefix = trimmed.toLowerCase().startsWith('cron ') ? trimmed.slice(5).trim() : trimmed;
+  const parts = withoutPrefix.split(/\s+/);
+
+  if (parts.length < 5) {
+    return null;
+  }
+
+  const trailingPart = parts.at(-1);
+
+  if (trailingPart && (trailingPart.includes('/') || trailingPart === 'UTC')) {
+    return {
+      expr: parts.slice(0, -1).join(' '),
+      tz: trailingPart
+    };
+  }
+
+  return {
+    expr: withoutPrefix,
+    tz: undefined
+  };
 }
 
 function createUpcomingRun(id: string, scheduledAt: Date): CronUpcomingRun {
@@ -211,7 +250,8 @@ function buildUpcomingRuns({
     if (minutes == null || minutes <= 0) {
       return nextRunAt
         ? [createUpcomingRun(`${jobId}:0`, new Date(nextRunAt))].filter(
-            (run) => !Number.isNaN(new Date(run.scheduledAt).getTime()) && new Date(run.scheduledAt).getTime() <= windowEndMs
+            (run) =>
+              !Number.isNaN(new Date(run.scheduledAt).getTime()) && new Date(run.scheduledAt).getTime() <= windowEndMs
           )
         : [];
     }
@@ -221,27 +261,34 @@ function buildUpcomingRuns({
         ? new Date(nextRunAt)
         : new Date(now.getTime() + minutes * 60 * 1000);
 
-    return Array.from({ length: UPCOMING_RUN_LIMIT })
+    const intervalRunCount = Math.min(
+      Math.ceil(UPCOMING_RUN_WINDOW_MS / (minutes * 60 * 1000)),
+      MAX_UPCOMING_RUNS_PER_JOB
+    );
+
+    return Array.from({ length: intervalRunCount })
       .map((_, index) => new Date(firstRun.getTime() + index * minutes * 60 * 1000))
       .filter((scheduledAt) => scheduledAt.getTime() <= windowEndMs)
       .map((scheduledAt, index) => createUpcomingRun(`${jobId}:${index}`, scheduledAt));
   }
 
-  if (scheduleKind === 'cron' && typeof schedule?.expr === 'string') {
+  const cronParts = extractCronParts(schedule?.expr ?? schedule?.display ?? rawJob.schedule_display ?? null);
+
+  if (scheduleKind === 'cron' && cronParts) {
     const runs: CronUpcomingRun[] = [];
-    const seededNextRun =
-      nextRunAt && !Number.isNaN(new Date(nextRunAt).getTime()) ? new Date(nextRunAt) : null;
+    const seededNextRun = nextRunAt && !Number.isNaN(new Date(nextRunAt).getTime()) ? new Date(nextRunAt) : null;
 
     if (seededNextRun && seededNextRun.getTime() <= windowEndMs) {
       runs.push(createUpcomingRun(`${jobId}:0`, seededNextRun));
     }
 
     try {
-      const parser = CronExpressionParser.parse(schedule.expr, {
-        currentDate: seededNextRun ? new Date(seededNextRun.getTime() + 1000) : now
+      const parser = CronExpressionParser.parse(cronParts.expr, {
+        currentDate: seededNextRun ? new Date(seededNextRun.getTime() + 1000) : now,
+        ...(cronParts.tz ? { tz: cronParts.tz } : {})
       });
 
-      while (parser.hasNext() && runs.length < UPCOMING_RUN_LIMIT) {
+      while (parser.hasNext() && runs.length < MAX_UPCOMING_RUNS_PER_JOB) {
         const nextRun = parser.next().toDate();
 
         if (nextRun.getTime() > windowEndMs) {

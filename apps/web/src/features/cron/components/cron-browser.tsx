@@ -8,6 +8,7 @@ import { SearchInput } from '@/components/ui/search-input';
 import { CronCalendar } from '@/features/cron/components/cron-calendar';
 import { CronIndex } from '@/features/cron/components/cron-index';
 import { CronSummaryGrid } from '@/features/cron/components/cron-summary-grid';
+import { getCronJobDisplayState } from '@/features/cron/lib/cron-job-presentation';
 import type { HermesCronJobSummary } from '@hermes-console/runtime';
 
 function uniqueValues(values: string[]) {
@@ -40,7 +41,7 @@ function filterJobs({
       return false;
     }
 
-    if (status !== 'all' && (job.lastStatus ?? job.state ?? 'unknown') !== status) {
+    if (status !== 'all' && getCronJobDisplayState(job) !== status) {
       return false;
     }
 
@@ -87,28 +88,27 @@ export function CronBrowser({
   );
 
   const agentOptions = createOptions(uniqueValues(jobs.map((job) => job.agentId)), 'All agents');
-  const statusOptions = createOptions(
-    uniqueValues(jobs.map((job) => job.lastStatus ?? job.state ?? 'unknown')),
-    'All states'
-  );
+  const statusOptions = createOptions(uniqueValues(jobs.map((job) => getCronJobDisplayState(job))), 'All states');
   const hasActiveFilters = query.trim().length > 0 || agent !== 'all' || status !== 'all';
+  const pausedJobCount = filteredJobs.filter(
+    (job) => getCronJobDisplayState(job) === 'paused' || getCronJobDisplayState(job) === 'disabled'
+  ).length;
+  const activeJobCount = filteredJobs.length - pausedJobCount;
 
   const summaryItems = [
     {
-      label: 'visible jobs',
-      value: formatCount(filteredJobs.length),
+      label: 'active jobs',
+      value: formatCount(activeJobCount),
       detail:
         filteredJobs.length === jobs.length
-          ? 'All detected cron jobs across agents.'
+          ? 'Jobs that are currently schedulable.'
           : `Filtered from ${formatCount(jobs.length)} total jobs.`,
       tone: 'default' as const
     },
     {
-      label: 'needs attention',
-      value: formatCount(
-        filteredJobs.filter((job) => job.attentionLevel === 'warning' || job.attentionLevel === 'critical').length
-      ),
-      detail: 'Jobs that are overdue, flaky, paused, or currently failing.',
+      label: 'paused jobs',
+      value: formatCount(pausedJobCount),
+      detail: 'Paused or disabled jobs in the current view.',
       tone: 'muted' as const
     },
     {
