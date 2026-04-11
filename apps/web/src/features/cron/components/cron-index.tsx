@@ -36,6 +36,22 @@ function attentionBadgeClass(level: HermesCronJobSummary['attentionLevel']) {
   }
 }
 
+function cadenceLabel(job: HermesCronJobSummary) {
+  if (job.scheduleKind === 'once') {
+    return 'one-shot';
+  }
+
+  if (job.scheduleKind === 'interval') {
+    return 'interval';
+  }
+
+  if (job.scheduleKind === 'cron') {
+    return 'cron';
+  }
+
+  return 'schedule';
+}
+
 function outputBadgeLabel(state: HermesCronJobSummary['latestOutputState']) {
   if (state === 'silent') {
     return 'silent';
@@ -46,6 +62,22 @@ function outputBadgeLabel(state: HermesCronJobSummary['latestOutputState']) {
   }
 
   return 'no output';
+}
+
+function formatSuccessRate(value: number | null) {
+  if (value == null) {
+    return '—';
+  }
+
+  return `${Math.round(value * 100)}%`;
+}
+
+function recentRunLabel(job: HermesCronJobSummary) {
+  if (job.recentObservedRunCount === 0) {
+    return 'no observed runs';
+  }
+
+  return `${job.recentFailureCount}/${job.recentObservedRunCount} recent failures`;
 }
 
 export function CronIndex({ jobs }: { jobs: HermesCronJobSummary[] }) {
@@ -65,7 +97,9 @@ export function CronIndex({ jobs }: { jobs: HermesCronJobSummary[] }) {
         <h3 className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">
           Scheduled jobs
         </h3>
-        <p className="mt-2 text-sm leading-6 text-fg-muted">Jobs across all detected agents.</p>
+        <p className="mt-2 text-sm leading-6 text-fg-muted">
+          Jobs across all detected agents, with execution health separate from saved output.
+        </p>
       </div>
 
       <div className="space-y-3">
@@ -103,6 +137,9 @@ export function CronIndex({ jobs }: { jobs: HermesCronJobSummary[] }) {
                     {job.attentionLevel.replace('_', ' ')}
                   </span>
                   <span className="rounded-full border border-border/80 bg-bg/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-muted">
+                    {cadenceLabel(job)}
+                  </span>
+                  <span className="rounded-full border border-border/80 bg-bg/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-muted">
                     {outputBadgeLabel(job.latestOutputState)}
                   </span>
                 </div>
@@ -116,11 +153,20 @@ export function CronIndex({ jobs }: { jobs: HermesCronJobSummary[] }) {
                       streak {job.failureStreak}
                     </span>
                   ) : null}
-                  {job.recentFailureCount > 0 ? <span>{job.recentFailureCount}/5 recent failures</span> : null}
+                  <span>{recentRunLabel(job)}</span>
+                  <span>success rate {formatSuccessRate(job.recentSuccessRate)}</span>
+                  {job.lastSuccessfulRunAt ? <span>last success {formatTimestamp(job.lastSuccessfulRunAt)}</span> : null}
+                  {job.lastFailedRunAt ? <span className="text-red-200">last failure {formatTimestamp(job.lastFailedRunAt)}</span> : null}
                   {job.latestDurationMs != null ? <span>last {Math.round(job.latestDurationMs / 1000)}s</span> : null}
                   <span>{job.recentOutputCount} outputs</span>
-                  {job.repeatCompleted != null ? <span>{job.repeatCompleted} completed</span> : null}
-                  {job.originChatName ? <span>{job.originChatName}</span> : null}
+                  {job.repeatCompleted != null ? (
+                    <span>
+                      {job.repeatCompleted}
+                      {job.repeatTimes != null ? `/${job.repeatTimes}` : ''} completed
+                    </span>
+                  ) : null}
+                  {job.model ? <span>{job.model}</span> : null}
+                  {job.pausedReason ? <span className="text-amber-200">paused: {job.pausedReason}</span> : null}
                   {job.lastError ? <span className="text-red-200">{job.lastError}</span> : null}
                 </div>
               </div>

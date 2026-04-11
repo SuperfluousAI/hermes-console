@@ -14,9 +14,9 @@ const renderTopbar = () => {
   });
 
   render(
-      <QueryClientProvider client={queryClient}>
-        <AppTopbar onOpenCommandPalette={vi.fn()} />
-      </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <AppTopbar onOpenCommandPalette={vi.fn()} onOpenSidebar={vi.fn()} />
+    </QueryClientProvider>
   );
 };
 
@@ -64,6 +64,7 @@ describe('AppTopbar', () => {
               rootKind: 'env_override',
               installStatus: 'ready',
               gatewayState: 'running',
+              updateCheckedAt: '2026-04-10T12:00:00.000Z',
               updateStatus: 'unknown',
               updateBehind: null,
               connectedPlatforms: ['discord', 'telegram'],

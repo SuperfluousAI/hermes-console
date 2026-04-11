@@ -9,6 +9,7 @@ import { readHermesCronDetail } from '@/features/cron/read-cron-detail';
 import { readHermesCronQuery } from '@/features/cron/query-cron';
 import { readHermesInventoryQuery } from '@/features/inventory/query-inventory';
 import { readKeyFileContentQuery, readKeyFilesDataQuery } from '@/features/key-files/query-key-files';
+import { readHermesLogDetailQuery, readHermesLogsQuery } from '@/features/logs/query-logs';
 import { readHermesMemoryQuery } from '@/features/memory/query-memory';
 import { readHermesCliDiagnostics } from '@/features/runtime-overview/hermes-cli-diagnostics';
 import { readRuntimeOverviewQuery } from '@/features/runtime-overview/query-runtime-overview';
@@ -33,6 +34,8 @@ const appPackageSchema = z.object({
   version: z.string()
 });
 
+const logDetailLinesSchema = z.coerce.number().int().min(1).max(500).catch(50);
+
 const readAppVersion = (): string | undefined => {
   try {
     const packageContent = readFileSync(new URL('../../../package.json', import.meta.url), 'utf8');
@@ -56,6 +59,7 @@ const createAppMeta = (): AppMeta => {
     installStatus: shellStatus.data.installStatus,
     rootKind: shellStatus.data.rootKind,
     rootPath: shellStatus.data.rootPath,
+    updateCheckedAt: shellStatus.data.updateCheckedAt,
     updateBehind: shellStatus.data.updateBehind,
     updateStatus: shellStatus.data.updateStatus,
     version: appVersion
@@ -213,6 +217,27 @@ export const createApp = ({ config }: { config: ServerConfig }) => {
       })
     )
   );
+
+  app.get('/api/logs', (context) =>
+    context.json(
+      createLiveSnapshotEnvelope({
+        result: readHermesLogsQuery()
+      })
+    )
+  );
+
+  app.get('/api/logs/:logId', (context) => {
+    const detailResult = readHermesLogDetailQuery({
+      logId: context.req.param('logId'),
+      lines: logDetailLinesSchema.parse(context.req.query('lines'))
+    });
+
+    if (detailResult == null) {
+      return notFound(`Log detail not found for ${context.req.param('logId')}`);
+    }
+
+    return context.json(createLiveSnapshotEnvelope({ result: detailResult }));
+  });
 
   app.get('/api/cron', (context) =>
     context.json(

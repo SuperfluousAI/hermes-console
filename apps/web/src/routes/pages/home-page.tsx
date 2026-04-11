@@ -8,6 +8,7 @@ import { OverviewConfiguration } from '@/features/runtime-overview/components/ov
 import { OverviewDiagnostics } from '@/features/runtime-overview/components/overview-diagnostics';
 import { OverviewGlance } from '@/features/runtime-overview/components/overview-glance';
 import { OverviewHero } from '@/features/runtime-overview/components/overview-hero';
+import { OverviewRuntimeInstall } from '@/features/runtime-overview/components/overview-runtime-install';
 import { OverviewSurfaces } from '@/features/runtime-overview/components/overview-surfaces';
 
 export const HomePage = () => {
@@ -25,6 +26,7 @@ export const HomePage = () => {
         overview={overview.data.data}
         refreshQueryKeys={[apiQueryKeys.overview, apiQueryKeys.inventory, apiQueryKeys.diagnostics]}
       />
+      <OverviewRuntimeInstall overview={overview.data.data} />
       <OverviewDiagnostics />
       <OverviewAttention overview={overview.data.data} />
       <OverviewGlance overview={overview.data.data} />

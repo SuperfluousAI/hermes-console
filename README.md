@@ -19,11 +19,12 @@ A read-only web UI that inspects your local Hermes state directly from disk. No 
 **Surfaces:**
 - **Overview** — runtime health, gateway state, connected platforms, warnings, update drift
 - **Sessions** — recent Hermes runs across agents with filtering and search
-- **Cron** — scheduled job status, recent outputs, health indicators
+- **Cron** — scheduled job status, calendar view, observed run health, recent outputs
 - **Skills** — installed skills, categories, linked files, detail views
 - **Memory** — `MEMORY.md` / `USER.md` visibility with pressure indicators
 - **Files** — high-signal config and instruction file previews
-- **Usage** — token counts and estimated cost breakdowns
+- **Usage** — token counts, estimated cost breakdowns, and trend charts
+- **Logs** — bounded runtime log tails with search, level filtering, and opt-in auto-refresh
 
 ## What it isn't
 
@@ -35,6 +36,14 @@ A read-only web UI that inspects your local Hermes state directly from disk. No 
 ## Why use it
 
 If you run Hermes locally and want to understand your setup without digging through files and CLI output — this does that. One screen, live data, calm UX, no theatre.
+
+Recent polish in `v0.3.0`:
+
+- responsive shell with a mobile header and drawer instead of a dumped sidebar
+- cron list and 7-day calendar views with clearer failure-rate signals
+- sessions cards cleaned up for faster scanning
+- usage charts that make token and session trends legible
+- a dedicated `/logs` page for Hermes runtime logs
 
 ## Running Hermes Console
 
@@ -123,6 +132,18 @@ Do not expose Hermes Console directly to the public internet without putting pro
   <img src="./apps/web/public/readme/usage.png" width="45%" alt="Usage" />
   <img src="./apps/web/public/readme/files.png" width="45%" alt="Files" />
 </p>
+
+## Release workflow
+
+Hermes Console uses repo-wide versions and git tags for public OSS releases.
+
+```bash
+pnpm release:check
+git commit -m "feat: ship v0.3.0 ux and ops pass"
+git tag v0.3.0
+```
+
+After that, push `main` and tags, then create the matching GitHub release from the `CHANGELOG.md` notes.
 
 ## Contributing
 

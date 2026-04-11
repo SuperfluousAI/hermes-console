@@ -156,6 +156,7 @@ export type ShellStatusSummary = {
   rootKind: 'default' | 'env_override';
   installStatus: InventoryInstallationStatus;
   gatewayState: GatewaySummary['state'];
+  updateCheckedAt: string | null;
   updateStatus: UpdateStatusSummary['status'];
   updateBehind: number | null;
   connectedPlatforms: string[];
@@ -325,7 +326,9 @@ export const shellStatusSummarySchema = z.object({
   rootKind: z.enum(['default', 'env_override']),
   installStatus: inventoryInstallationStatusSchema,
   gatewayState: gatewaySummarySchema.shape.state,
+  updateCheckedAt: z.string().nullable(),
   updateStatus: updateStatusSummarySchema.shape.status,
   updateBehind: z.number().nullable(),
+  connectedPlatforms: z.array(z.string()),
   connectedPlatformCount: z.number()
 });

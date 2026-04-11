@@ -4,6 +4,7 @@ export * from './cron/types.js';
 export * from './inventory/discovery.js';
 export * from './inventory/types.js';
 export * from './key-files/types.js';
+export * from './logs/types.js';
 export * from './memory/types.js';
 export * from './runtime-overview/compose-runtime-overview.js';
 export * from './runtime-overview/runtime-artifacts.js';

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 - 2026-04-12
+
+- Reworked the shell for small screens so navigation collapses into a header and drawer instead of rendering the sidebar inline above the page.
+- Expanded Cron with clearer health metadata, server-derived upcoming runs, a 7-day calendar view, and a detail page that separates observed execution health from saved output files.
+- Cleaned up Sessions cards, replacing the confusing root-agent `Default` emphasis with clearer model and source context.
+- Added usage charts for session/token trends and stacked token-category breakdowns.
+- Added a new Logs page with bounded tail reads, search, level filtering, manual refresh, and opt-in 15-second auto-refresh.
+- Expanded Hermes runtime visibility on Overview with a dedicated install/runtime panel covering root path, version drift, connected platforms, and agent availability.
+- Added targeted tests for cron health derivation and bounded log-tail reads.
+
 ## 0.2.0 - 2026-04-10
 
 - Added a global command palette with `Cmd/Ctrl+K` and `/` shortcuts for route, agent, session, cron, skill, and file search.

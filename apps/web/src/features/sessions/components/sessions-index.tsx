@@ -1,14 +1,14 @@
 import type { HermesSessionSummary } from '@hermes-console/runtime';
 
-function formatTimestamp(value: string) {
+function formatTimestamp(value: string): string {
   return new Date(value).toLocaleString();
 }
 
-function formatCount(value: number) {
+function formatCount(value: number): string {
   return new Intl.NumberFormat().format(value);
 }
 
-function formatCost(value: number | null) {
+function formatCost(value: number | null): string | null {
   if (value == null) {
     return null;
   }
@@ -18,6 +18,14 @@ function formatCost(value: number | null) {
     currency: 'USD',
     maximumFractionDigits: 4
   }).format(value);
+}
+
+function sourceBadgeLabel(session: HermesSessionSummary): string {
+  if (session.platform) {
+    return session.platform;
+  }
+
+  return session.sourceLabel;
 }
 
 export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }) {
@@ -45,8 +53,10 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
       <div className="space-y-3">
         {sessions.map((session) => {
           const formattedCost = formatCost(session.estimatedCostUsd);
+          const showAgentBadge = session.agentId !== 'default' || session.agentSource !== 'root';
           const stateOnly = session.hasStateTranscript && !session.hasMessagingMetadata;
           const messagingOnly = !session.hasStateTranscript && session.hasMessagingMetadata;
+          const secondaryContext = [session.chatType, session.cronJobName].filter(Boolean).join(' · ');
 
           return (
             <article key={session.id} className="rounded-md border border-border/70 bg-bg/40 p-3">
@@ -54,11 +64,18 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-fg-strong">{session.title}</p>
-                    <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-accent">
-                      {session.agentLabel}
-                    </span>
+                    {showAgentBadge ? (
+                      <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-accent">
+                        {session.agentLabel}
+                      </span>
+                    ) : null}
+                    {session.model ? (
+                      <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-sky-200">
+                        {session.model}
+                      </span>
+                    ) : null}
                     <span className="rounded-full border border-border/80 bg-bg/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-muted">
-                      {session.sourceLabel}
+                      {sourceBadgeLabel(session)}
                     </span>
                     {stateOnly ? (
                       <span className="rounded-full border border-border/80 bg-bg/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-muted">
@@ -71,22 +88,18 @@ export function SessionsIndex({ sessions }: { sessions: HermesSessionSummary[] }
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-2 truncate text-sm leading-6 text-fg-muted">
-                    {session.displayName ?? session.cronJobName ?? '—'}
-                  </p>
-                  <p className="mt-1 font-mono text-[11px] text-fg-faint">{session.sessionId}</p>
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-fg-muted">
+
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-fg-muted">
+                    <span className="font-mono text-[11px] text-fg-faint">{session.sessionId}</span>
+                    {secondaryContext ? <span>{secondaryContext}</span> : null}
                     <span>{formatCount(session.messageCount)} messages</span>
                     <span>{formatCount(session.toolCallCount)} tools</span>
                     <span>{formatCount(session.totalTokens)} tokens</span>
-                    {session.model ? <span>{session.model}</span> : null}
                     {formattedCost ? <span>{formattedCost}</span> : null}
                     {session.memoryFlushed != null ? (
                       <span>{session.memoryFlushed ? 'memory flushed' : 'memory live'}</span>
                     ) : null}
-                    {session.endedAt ? (
-                      <span>ended: {session.endedAt ? new Date(session.endedAt).toLocaleString() : '—'}</span>
-                    ) : null}
+                    {session.endedAt ? <span>ended {formatTimestamp(session.endedAt)}</span> : <span>still active</span>}
                   </div>
                 </div>
 

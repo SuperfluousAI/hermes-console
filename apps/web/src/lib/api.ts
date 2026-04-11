@@ -6,6 +6,8 @@ import {
   hermesMemoryIndexSchema,
   hermesCronIndexSchema,
   hermesCronJobDetailSchema,
+  hermesLogDetailSchema,
+  hermesLogsIndexSchema,
   hermesSessionsIndexSchema,
   hermesUsageSummarySchema,
   inventoryInstallationSchema,
@@ -108,6 +110,8 @@ export const apiQueryKeys = {
   diagnostics: ['diagnostics'] as const,
   files: ['files'] as const,
   inventory: ['inventory'] as const,
+  logs: ['logs'] as const,
+  logDetail: (logId: string, lines: number) => ['log-detail', logId, lines] as const,
   memory: ['memory'] as const,
   overview: ['overview'] as const,
   sessions: ['sessions'] as const,
@@ -205,6 +209,26 @@ export const usageQueryOptions = () =>
       fetchSnapshot({
         dataSchema: usageSnapshotDataSchema,
         path: '/api/usage'
+      })
+  });
+
+export const logsQueryOptions = () =>
+  queryOptions({
+    queryKey: apiQueryKeys.logs,
+    queryFn: () =>
+      fetchSnapshot({
+        dataSchema: hermesLogsIndexSchema,
+        path: '/api/logs'
+      })
+  });
+
+export const logDetailQueryOptions = ({ logId, lines }: { logId: string; lines: number }) =>
+  queryOptions({
+    queryKey: apiQueryKeys.logDetail(logId, lines),
+    queryFn: () =>
+      fetchSnapshot({
+        dataSchema: hermesLogDetailSchema,
+        path: `/api/logs/${encodeURIComponent(logId)}?lines=${encodeURIComponent(String(lines))}`
       })
   });
 

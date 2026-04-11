@@ -25,7 +25,7 @@ function compareCronJobs(
   return leftTime - rightTime;
 }
 
-function buildObservedRunsByJobId(stateSessions: AgentStateSessionRecord[]) {
+export function buildObservedRunsByJobId(stateSessions: AgentStateSessionRecord[]) {
   const runsByJobId = new Map<string, CronObservedRunRecord[]>();
 
   for (const session of stateSessions) {

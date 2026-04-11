@@ -98,6 +98,7 @@ export function readShellStatusQuery(): HermesQueryResult<ShellStatusSummary> {
       rootKind: paths.hermesRoot.kind,
       installStatus: installation.data.status,
       gatewayState: gateway.state,
+      updateCheckedAt: update.checkedAt,
       updateStatus: update.status,
       updateBehind: update.behind,
       connectedPlatforms,

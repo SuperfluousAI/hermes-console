@@ -5,6 +5,7 @@ import { AppSelect } from '@/components/ui/app-select';
 import { EmptyState } from '@/components/ui/empty-state';
 import { RefreshButton } from '@/components/ui/refresh-button';
 import { SearchInput } from '@/components/ui/search-input';
+import { CronCalendar } from '@/features/cron/components/cron-calendar';
 import { CronIndex } from '@/features/cron/components/cron-index';
 import { CronSummaryGrid } from '@/features/cron/components/cron-summary-grid';
 import type { HermesCronJobSummary } from '@hermes-console/runtime';
@@ -47,7 +48,17 @@ function filterJobs({
       return true;
     }
 
-    return [job.name, job.scheduleDisplay, job.deliver, job.originChatName, job.id]
+    return [
+      job.name,
+      job.scheduleDisplay,
+      job.scheduleExpression,
+      job.deliver,
+      job.originChatName,
+      job.id,
+      job.model,
+      job.provider,
+      job.pausedReason
+    ]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
@@ -67,6 +78,7 @@ export function CronBrowser({
   const [query, setQuery] = useState('');
   const [agent, setAgent] = useState('all');
   const [status, setStatus] = useState('all');
+  const [view, setView] = useState<'list' | 'calendar'>('list');
   const deferredQuery = useDeferredValue(query);
 
   const filteredJobs = useMemo(
@@ -96,19 +108,19 @@ export function CronBrowser({
       value: formatCount(
         filteredJobs.filter((job) => job.attentionLevel === 'warning' || job.attentionLevel === 'critical').length
       ),
-      detail: 'Jobs that are overdue, flaky, or currently failing.',
+      detail: 'Jobs that are overdue, flaky, paused, or currently failing.',
       tone: 'muted' as const
     },
     {
-      label: 'overdue',
-      value: formatCount(filteredJobs.filter((job) => job.overdue).length),
-      detail: 'Enabled jobs whose next run time is more than 30 minutes late.',
+      label: 'recent failures',
+      value: formatCount(filteredJobs.filter((job) => job.recentFailureCount > 0).length),
+      detail: 'Jobs with at least one recent observed failure.',
       tone: 'default' as const
     },
     {
-      label: 'failure streaks',
-      value: formatCount(filteredJobs.filter((job) => job.failureStreak > 0).length),
-      detail: 'Jobs with one or more consecutive failed observed runs.',
+      label: 'upcoming runs',
+      value: formatCount(filteredJobs.reduce((sum, job) => sum + job.upcomingRuns.length, 0)),
+      detail: 'Occurrences visible in the next 7 days.',
       tone: 'default' as const
     }
   ];
@@ -124,13 +136,13 @@ export function CronBrowser({
           Scheduled Jobs
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-fg-muted">
-          Scheduled jobs across agents, with run state and recent output.
+          Scheduled jobs across agents, with clearer execution health, upcoming runs, and saved output state.
         </p>
         <div className="mt-4 flex flex-wrap items-stretch gap-3">
           <SearchInput
             value={query}
             onChange={setQuery}
-            placeholder="Search jobs, schedules, delivery targets, and job ids"
+            placeholder="Search jobs, schedules, delivery targets, providers, and job ids"
             className="min-w-[18rem] flex-[2.2_1_28rem]"
           />
           <AppSelect
@@ -147,6 +159,24 @@ export function CronBrowser({
             ariaLabel="Filter cron jobs by state"
             className="min-w-[11.5rem] flex-[0_1_12rem]"
           />
+          <div className="inline-flex overflow-hidden rounded-xl border border-border/70 bg-bg/35">
+            {[
+              { value: 'list', label: 'List' },
+              { value: 'calendar', label: 'Calendar' }
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setView(option.value as 'list' | 'calendar')}
+                className={[
+                  'px-3 py-2.5 text-sm transition-colors',
+                  view === option.value ? 'bg-accent/10 text-accent' : 'text-fg-muted hover:text-fg'
+                ].join(' ')}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
           {hasActiveFilters ? (
             <button
               type="button"
@@ -185,6 +215,8 @@ export function CronBrowser({
             ) : null
           }
         />
+      ) : view === 'calendar' ? (
+        <CronCalendar jobs={filteredJobs} />
       ) : (
         <CronIndex jobs={filteredJobs} />
       )}

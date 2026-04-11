@@ -114,9 +114,10 @@ const appMeta = {
   rootKind: 'default' as const,
   installStatus: 'ready' as const,
   gatewayState: 'running' as const,
+  updateCheckedAt: isoTimestamp,
   updateStatus: 'up_to_date' as const,
   updateBehind: 0,
-  version: '0.2.0',
+  version: '0.3.0',
   connectedPlatforms: ['discord'],
   connectedPlatformCount: 1
 };

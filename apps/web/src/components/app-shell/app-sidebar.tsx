@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useRouterState } from '@tanstack/react-router';
-import { ExternalLink, Github } from 'lucide-react';
+import { ExternalLink, Github, X } from 'lucide-react';
 
 import { appMetaQueryOptions } from '@/lib/api';
 import { appRoutes } from '@/lib/navigation';
@@ -8,7 +8,15 @@ import { appRoutes } from '@/lib/navigation';
 const isRouteActive = (pathname: string, href: string): boolean =>
   href === '/' ? pathname === href : pathname.startsWith(href);
 
-export function AppSidebar() {
+export function AppSidebar({
+  mode = 'desktop',
+  onNavigate,
+  onRequestClose
+}: {
+  mode?: 'desktop' | 'drawer';
+  onNavigate?: () => void;
+  onRequestClose?: () => void;
+}) {
   const pathname = useRouterState({
     select: (state) => state.location.pathname
   });
@@ -20,12 +28,27 @@ export function AppSidebar() {
   const versionLabel = `v${appMetaQuery.data?.version ?? fallbackVersion ?? '—'}`;
 
   return (
-    <aside className="flex h-full min-h-0 flex-col border-r border-border bg-surface/80 px-3 py-5 xl:sticky xl:top-0 xl:h-screen">
+    <aside
+      className={[
+        'flex h-full min-h-0 flex-col border-r border-border bg-surface/95 px-3 py-5',
+        mode === 'desktop' ? 'xl:sticky xl:top-0 xl:h-screen' : 'h-screen shadow-2xl shadow-black/40'
+      ].join(' ')}
+    >
       <div>
-        <div className="mb-5 px-3">
+        <div className="mb-5 flex items-center justify-between gap-3 px-3">
           <p className="font-[family-name:var(--font-bricolage)] text-sm font-semibold tracking-tight text-accent">
             Hermes Console
           </p>
+          {mode === 'drawer' ? (
+            <button
+              type="button"
+              aria-label="Close navigation"
+              onClick={onRequestClose}
+              className="rounded-md border border-border/80 bg-bg/40 p-1.5 text-fg-muted transition-colors hover:border-accent/35 hover:text-fg"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
         </div>
 
         <nav aria-label="Primary" className="flex flex-col gap-0.5">
@@ -37,6 +60,7 @@ export function AppSidebar() {
               <Link
                 key={route.href}
                 to={route.href}
+                onClick={() => onNavigate?.()}
                 className={[
                   'relative flex items-start gap-3 rounded-md px-3 py-2 transition-colors',
                   active ? 'border-l-2 border-accent bg-accent/10' : 'border-l-2 border-transparent hover:bg-white/5'

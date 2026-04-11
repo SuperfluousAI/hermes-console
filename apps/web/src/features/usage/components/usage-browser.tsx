@@ -1,5 +1,17 @@
 import type { QueryKey } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from 'recharts';
 
 import { AppSelect } from '@/components/ui/app-select';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -8,20 +20,134 @@ import {
   summarizeUsageWindow,
   type HermesUsageSummary,
   type UsageBreakdownRow,
-  type UsageWindowSummary,
-  type UsageWindowId
+  type UsageSessionRecord,
+  type UsageWindowId,
+  type UsageWindowSummary
 } from '@hermes-console/runtime';
 
-function formatInteger(value: number) {
+const WINDOW_DAY_COUNT: Record<UsageWindowId, number> = {
+  '1d': 1,
+  '7d': 7,
+  '30d': 30
+};
+
+function formatInteger(value: number): string {
   return new Intl.NumberFormat().format(value);
 }
 
-function formatCurrency(value: number) {
+function formatCompactInteger(value: number): string {
+  return new Intl.NumberFormat(undefined, {
+    notation: 'compact',
+    maximumFractionDigits: 1
+  }).format(value);
+}
+
+function formatCurrency(value: number): string {
   return new Intl.NumberFormat(undefined, {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: value >= 100 ? 0 : 2
   }).format(value);
+}
+
+function getTooltipNumber(value: number | string | ReadonlyArray<number | string> | undefined): number {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  if (Array.isArray(value)) {
+    const [firstValue] = value;
+
+    return getTooltipNumber(firstValue);
+  }
+
+  return 0;
+}
+
+function formatTimelineLabel(timestamp: number, windowId: UsageWindowId): string {
+  const date = new Date(timestamp);
+
+  if (windowId === '1d') {
+    return date.toLocaleTimeString([], {
+      hour: 'numeric'
+    });
+  }
+
+  return date.toLocaleDateString([], {
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+function getBucketStart(timestamp: number, windowId: UsageWindowId): number {
+  const date = new Date(timestamp);
+
+  if (windowId === '1d') {
+    date.setMinutes(0, 0, 0);
+    return date.getTime();
+  }
+
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+}
+
+function buildBucketStarts(now: Date, windowId: UsageWindowId): number[] {
+  const bucketCount = windowId === '1d' ? 24 : WINDOW_DAY_COUNT[windowId];
+  const bucketSizeMs = windowId === '1d' ? 60 * 60 * 1_000 : 24 * 60 * 60 * 1_000;
+  const currentBucketStart = getBucketStart(now.getTime(), windowId);
+
+  return Array.from({ length: bucketCount }, (_, index) => currentBucketStart - (bucketCount - index - 1) * bucketSizeMs);
+}
+
+function getCurrentUsageWindow({
+  now,
+  records,
+  usage,
+  windowId
+}: {
+  now: Date;
+  records: HermesUsageSummary['records'];
+  usage: HermesUsageSummary;
+  windowId: UsageWindowId;
+}): UsageWindowSummary {
+  if (records.length > 0) {
+    return summarizeUsageWindow({
+      records,
+      windowId,
+      now
+    });
+  }
+
+  const matchingWindow = usage.windows.find((window) => window.id === windowId);
+
+  if (matchingWindow) {
+    return matchingWindow;
+  }
+
+  return summarizeUsageWindow({
+    records: [],
+    windowId,
+    now
+  });
+}
+
+function createAgentOptions(usage: HermesUsageSummary) {
+  return [
+    {
+      value: 'all',
+      label: 'All agents'
+    },
+    ...usage.agents.map((agent) => ({
+      value: agent.id,
+      label: agent.label
+    }))
+  ];
 }
 
 function UsageSummaryGrid({ items }: { items: Array<{ label: string; value: string; detail: string }> }) {
@@ -87,49 +213,221 @@ function BreakdownTable({
   );
 }
 
-function createAgentOptions(usage: HermesUsageSummary) {
-  return [
-    {
-      value: 'all',
-      label: 'All agents'
-    },
-    ...usage.agents.map((agent) => ({
-      value: agent.id,
-      label: agent.label
-    }))
-  ];
+function UsageChartCard({
+  title,
+  description,
+  children
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-lg border border-border bg-surface/70 p-4">
+      <div className="mb-4">
+        <h3 className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">{title}</h3>
+        <p className="mt-2 text-sm leading-6 text-fg-muted">{description}</p>
+      </div>
+      {children}
+    </section>
+  );
 }
 
-function getCurrentUsageWindow({
+function buildTimelineData({
   now,
   records,
-  usage,
   windowId
 }: {
   now: Date;
-  records: HermesUsageSummary['records'];
-  usage: HermesUsageSummary;
+  records: UsageSessionRecord[];
   windowId: UsageWindowId;
-}): UsageWindowSummary {
-  if (records.length > 0) {
-    return summarizeUsageWindow({
-      records,
-      windowId,
-      now
-    });
-  }
+}) {
+  const bucketStarts = buildBucketStarts(now, windowId);
+  const bucketIndex = new Map(
+    bucketStarts.map((bucketStart) => [
+      bucketStart,
+      {
+        label: formatTimelineLabel(bucketStart, windowId),
+        sessions: 0,
+        totalTokens: 0,
+        estimatedCostUsd: 0
+      }
+    ])
+  );
+  const windowStart = bucketStarts[0] ?? getBucketStart(now.getTime(), windowId);
 
-  const matchingWindow = usage.windows.find((window) => window.id === windowId);
+  records.forEach((record) => {
+    const startedAt = new Date(record.startedAt).getTime();
 
-  if (matchingWindow) {
-    return matchingWindow;
-  }
+    if (Number.isNaN(startedAt) || startedAt < windowStart) {
+      return;
+    }
 
-  return summarizeUsageWindow({
-    records: [],
-    windowId,
-    now
+    const bucketStart = getBucketStart(startedAt, windowId);
+    const entry = bucketIndex.get(bucketStart);
+
+    if (!entry) {
+      return;
+    }
+
+    entry.sessions += 1;
+    entry.totalTokens += record.totalTokens;
+    entry.estimatedCostUsd += record.estimatedCostUsd ?? 0;
   });
+
+  return bucketStarts.map((bucketStart) => {
+    const entry = bucketIndex.get(bucketStart);
+
+    return {
+      label: formatTimelineLabel(bucketStart, windowId),
+      sessions: entry?.sessions ?? 0,
+      totalTokens: entry?.totalTokens ?? 0,
+      estimatedCostUsd: Number((entry?.estimatedCostUsd ?? 0).toFixed(4))
+    };
+  });
+}
+
+function UsageTimelineChart({
+  records,
+  usageWindowTimestamp,
+  windowId
+}: {
+  records: UsageSessionRecord[];
+  usageWindowTimestamp: Date;
+  windowId: UsageWindowId;
+}) {
+  const data = useMemo(
+    () =>
+      buildTimelineData({
+        now: usageWindowTimestamp,
+        records,
+        windowId
+      }),
+    [records, usageWindowTimestamp, windowId]
+  );
+
+  if (data.every((point) => point.sessions === 0 && point.totalTokens === 0)) {
+    return (
+      <div className="rounded-md border border-dashed border-border/80 p-4 text-sm leading-6 text-fg-muted">
+        No session activity landed in this window yet.
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+          <XAxis dataKey="label" stroke="rgba(180,191,210,0.8)" tickLine={false} axisLine={false} fontSize={12} />
+          <YAxis
+            yAxisId="tokens"
+            stroke="rgba(180,191,210,0.8)"
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={formatCompactInteger}
+            fontSize={12}
+          />
+          <YAxis
+            yAxisId="sessions"
+            orientation="right"
+            stroke="rgba(180,191,210,0.8)"
+            tickLine={false}
+            axisLine={false}
+            allowDecimals={false}
+            fontSize={12}
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'rgba(9, 13, 20, 0.96)',
+              border: '1px solid rgba(113, 127, 150, 0.35)',
+              borderRadius: '12px',
+              color: '#f5f7fb'
+            }}
+            formatter={(value, name) => {
+              const numericValue = getTooltipNumber(value);
+
+              if (name === 'sessions') {
+                return [formatInteger(numericValue), 'sessions'];
+              }
+
+              if (name === 'totalTokens') {
+                return [formatInteger(numericValue), 'tokens'];
+              }
+
+              return [formatCurrency(numericValue), 'cost'];
+            }}
+          />
+          <Legend />
+          <Bar yAxisId="sessions" dataKey="sessions" name="sessions" fill="rgba(124, 58, 237, 0.55)" radius={[6, 6, 0, 0]} />
+          <Line
+            yAxisId="tokens"
+            type="monotone"
+            dataKey="totalTokens"
+            name="totalTokens"
+            stroke="#f59e0b"
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 5, fill: '#f59e0b' }}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function UsageBreakdownChart({ current }: { current: UsageWindowSummary }) {
+  const data = [
+    {
+      name: 'tokens',
+      inputTokens: current.inputTokens,
+      outputTokens: current.outputTokens,
+      cacheReadTokens: current.cacheReadTokens,
+      cacheWriteTokens: current.cacheWriteTokens,
+      reasoningTokens: current.reasoningTokens
+    }
+  ];
+
+  if (
+    current.inputTokens === 0 &&
+    current.outputTokens === 0 &&
+    current.cacheReadTokens === 0 &&
+    current.cacheWriteTokens === 0 &&
+    current.reasoningTokens === 0
+  ) {
+    return (
+      <div className="rounded-md border border-dashed border-border/80 p-4 text-sm leading-6 text-fg-muted">
+        No token categories were recorded in this window yet.
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" horizontal={false} />
+          <XAxis type="number" stroke="rgba(180,191,210,0.8)" tickLine={false} axisLine={false} tickFormatter={formatCompactInteger} fontSize={12} />
+          <YAxis type="category" dataKey="name" hide />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'rgba(9, 13, 20, 0.96)',
+              border: '1px solid rgba(113, 127, 150, 0.35)',
+              borderRadius: '12px',
+              color: '#f5f7fb'
+            }}
+            formatter={(value, name) => [formatInteger(getTooltipNumber(value)), String(name)]}
+          />
+          <Legend />
+          <Bar dataKey="inputTokens" stackId="tokens" name="input" fill="#38bdf8" radius={[6, 0, 0, 6]} />
+          <Bar dataKey="outputTokens" stackId="tokens" name="output" fill="#f59e0b" />
+          <Bar dataKey="cacheReadTokens" stackId="tokens" name="cache read" fill="#10b981" />
+          <Bar dataKey="cacheWriteTokens" stackId="tokens" name="cache write" fill="#14b8a6" />
+          <Bar dataKey="reasoningTokens" stackId="tokens" name="reasoning" fill="#8b5cf6" radius={[0, 6, 6, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
 export function UsageBrowser({ refreshQueryKeys, usage }: { refreshQueryKeys: QueryKey[]; usage: HermesUsageSummary }) {
@@ -137,11 +435,11 @@ export function UsageBrowser({ refreshQueryKeys, usage }: { refreshQueryKeys: Qu
     usage.availableWindows[1] ?? usage.availableWindows[0] ?? '7d'
   );
   const [agentId, setAgentId] = useState('all');
+  const usageWindowTimestamp = useMemo(() => new Date(usage.loadedAt), [usage.loadedAt]);
   const filteredRecords = useMemo(
     () => (agentId === 'all' ? usage.records : usage.records.filter((record) => record.agentId === agentId)),
     [agentId, usage.records]
   );
-  const usageWindowTimestamp = useMemo(() => new Date(usage.loadedAt), [usage.loadedAt]);
   const current = useMemo(
     () =>
       getCurrentUsageWindow({
@@ -270,13 +568,28 @@ export function UsageBrowser({ refreshQueryKeys, usage }: { refreshQueryKeys: Qu
         />
       ) : (
         <>
+          <div className="grid gap-6 xl:grid-cols-2">
+            <UsageChartCard
+              title="Usage timeline"
+              description="Sessions and token volume over the selected time window."
+            >
+              <UsageTimelineChart records={filteredRecords} usageWindowTimestamp={usageWindowTimestamp} windowId={current.id} />
+            </UsageChartCard>
+            <UsageChartCard
+              title="Token mix"
+              description="How the current window splits across input, output, cache, and reasoning tokens."
+            >
+              <UsageBreakdownChart current={current} />
+            </UsageChartCard>
+          </div>
+
           <section className="rounded-lg border border-border bg-surface/70 p-4">
             <div className="mb-4">
               <h3 className="font-[family-name:var(--font-bricolage)] text-base font-semibold text-fg-strong">
                 Token breakdown
               </h3>
               <p className="mt-2 text-sm leading-6 text-fg-muted">
-                Input, output, cache, and reasoning tokens for the selected window.
+                Input, output, cache, and reasoning totals for the selected window.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">

@@ -17,6 +17,7 @@ import {
   cronQueryOptions,
   filesQueryOptions,
   inventoryQueryOptions,
+  logsQueryOptions,
   memoryQueryOptions,
   overviewQueryOptions,
   sessionsQueryOptions,
@@ -29,6 +30,7 @@ import { CronDetailPage } from '@/routes/pages/cron-detail-page';
 import { CronPage } from '@/routes/pages/cron-page';
 import { FilesPage } from '@/routes/pages/files-page';
 import { HomePage } from '@/routes/pages/home-page';
+import { LogsPage } from '@/routes/pages/logs-page';
 import { MemoryPage } from '@/routes/pages/memory-page';
 import { SessionsPage } from '@/routes/pages/sessions-page';
 import { SkillDetailPage } from '@/routes/pages/skill-detail-page';
@@ -191,6 +193,13 @@ const usageRoute = createRoute({
   component: UsagePage
 });
 
+const logsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/logs',
+  loader: ({ context }) => context.queryClient.ensureQueryData(logsQueryOptions()),
+  component: LogsPage
+});
+
 const skillsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/skills',
@@ -284,6 +293,7 @@ const routeTree = rootRoute.addChildren([
   sessionsRoute,
   cronRoute,
   cronDetailRoute,
+  logsRoute,
   usageRoute,
   skillsRoute,
   skillDetailRoute,

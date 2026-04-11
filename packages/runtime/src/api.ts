@@ -41,6 +41,7 @@ export const appMetaSchema = z.object({
   rootKind: rootKindSchema,
   installStatus: inventoryInstallationStatusSchema,
   gatewayState: gatewayStateSchema,
+  updateCheckedAt: z.string().nullable(),
   updateStatus: updateStatusSchema,
   updateBehind: z.number().nullable(),
   version: z.string().optional(),
