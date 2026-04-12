@@ -3,6 +3,7 @@ import {
   appMetaSchema,
   createSnapshotEnvelopeSchema,
   diagnosticsResponseSchema,
+  hermesConfigIndexSchema,
   hermesMemoryIndexSchema,
   hermesCronIndexSchema,
   hermesCronJobDetailSchema,
@@ -105,6 +106,7 @@ const usageSnapshotDataSchema = z.union([hermesUsageSummarySchema, legacyUsageSu
 
 export const apiQueryKeys = {
   appMeta: ['app-meta'] as const,
+  config: ['config'] as const,
   cron: ['cron'] as const,
   cronDetail: (agentId: string, jobId: string) => ['cron-detail', agentId, jobId] as const,
   diagnostics: ['diagnostics'] as const,
@@ -279,6 +281,16 @@ export const fileContentQueryOptions = ({ fileId }: { fileId: string }) =>
       fetchSnapshot({
         dataSchema: keyFileContentDataSchema,
         path: `/api/files/${encodeURIComponent(fileId)}`
+      })
+  });
+
+export const configQueryOptions = () =>
+  queryOptions({
+    queryKey: apiQueryKeys.config,
+    queryFn: () =>
+      fetchSnapshot({
+        dataSchema: hermesConfigIndexSchema,
+        path: '/api/config'
       })
   });
 

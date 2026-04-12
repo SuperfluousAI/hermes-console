@@ -13,6 +13,7 @@ import { RouteError } from '@/components/route-error';
 import { RoutePending } from '@/components/route-pending';
 import {
   fileContentQueryOptions,
+  configQueryOptions,
   cronDetailQueryOptions,
   cronQueryOptions,
   filesQueryOptions,
@@ -26,6 +27,7 @@ import {
   skillsQueryOptions,
   usageQueryOptions
 } from '@/lib/api';
+import { ConfigPage } from '@/routes/pages/config-page';
 import { CronDetailPage } from '@/routes/pages/cron-detail-page';
 import { CronPage } from '@/routes/pages/cron-page';
 import { FilesPage } from '@/routes/pages/files-page';
@@ -288,6 +290,13 @@ const filesRoute = createRoute({
   }
 });
 
+const configRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/config',
+  loader: ({ context }) => context.queryClient.ensureQueryData(configQueryOptions()),
+  component: ConfigPage
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   sessionsRoute,
@@ -298,7 +307,8 @@ const routeTree = rootRoute.addChildren([
   skillsRoute,
   skillDetailRoute,
   memoryRoute,
-  filesRoute
+  filesRoute,
+  configRoute
 ]);
 
 export const createAppRouter = ({ history, queryClient }: { history?: RouterHistory; queryClient: QueryClient }) =>
