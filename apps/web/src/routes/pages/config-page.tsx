@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import hljs from 'highlight.js/lib/core';
 import yaml from 'highlight.js/lib/languages/yaml';
@@ -14,13 +14,6 @@ export function ConfigPage() {
   const files = data.files;
 
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const activeFile = files[selectedIdx] ?? files[0];
-  const codeRef = useRef<HTMLElement>(null);
-
-  const highlighted = useMemo(() => {
-    if (!activeFile?.content) return '';
-    return hljs.highlight(activeFile.content, { language: 'yaml' }).value;
-  }, [activeFile?.content]);
 
   if (files.length === 0) {
     return (
@@ -31,9 +24,34 @@ export function ConfigPage() {
     );
   }
 
+  const activeFile = files[selectedIdx] ?? files[0];
+
+  return <ConfigViewer files={files} activeFile={activeFile} selectedIdx={selectedIdx} onSelect={setSelectedIdx} issues={query.data.issues} status={query.data.meta.dataStatus} />;
+}
+
+function ConfigViewer({
+  files,
+  activeFile,
+  selectedIdx,
+  onSelect,
+  issues,
+  status
+}: {
+  files: { agentId: string; agentLabel: string; agentSource: string; path: string; content: string | null }[];
+  activeFile: { agentId: string; agentLabel: string; agentSource: string; path: string; content: string | null };
+  selectedIdx: number;
+  onSelect: (idx: number) => void;
+  issues: unknown[];
+  status: string;
+}) {
+  const highlighted = useMemo(() => {
+    if (!activeFile.content) return '';
+    return hljs.highlight(activeFile.content, { language: 'yaml' }).value;
+  }, [activeFile.content]);
+
   return (
     <div className="space-y-6">
-      <QueryStatusCard title="Config read quality" status={query.data.meta.dataStatus} issues={query.data.issues} />
+      <QueryStatusCard title="Config read quality" status={status} issues={issues} />
 
       <div>
         <h2 className="font-[family-name:var(--font-bricolage)] text-lg font-semibold text-fg-strong">
@@ -50,7 +68,7 @@ export function ConfigPage() {
           {files.map((file, idx) => (
             <button
               key={file.agentId}
-              onClick={() => setSelectedIdx(idx)}
+              onClick={() => onSelect(idx)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                 idx === selectedIdx ? 'bg-surface text-fg-strong shadow-sm' : 'text-fg-muted hover:text-fg-strong'
               }`}
@@ -70,7 +88,6 @@ export function ConfigPage() {
         </div>
         <pre className="max-h-[600px] overflow-auto rounded-lg bg-bg/60 p-4 text-xs leading-5">
           <code
-            ref={codeRef}
             className="language-yaml hljs"
             dangerouslySetInnerHTML={{ __html: highlighted || 'File not found' }}
           />
