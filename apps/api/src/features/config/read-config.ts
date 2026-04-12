@@ -2,13 +2,7 @@ import path from 'node:path';
 
 import { resolveInventoryPathConfigFromEnv } from '@/features/inventory/resolve-path-config';
 import { readTextFileResult } from '@/lib/read-text-file-result';
-import type { HermesConfigEntry, HermesConfigIndex, HermesConfigSource } from '@hermes-console/runtime';
-
-const MASK = '••••••';
-
-function maskEnvContent(raw: string): string {
-  return raw.replace(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*=)(.*)$/gm, (_, prefix) => `${prefix}${MASK}`);
-}
+import type { HermesConfigEntry, HermesConfigIndex } from '@hermes-console/runtime';
 
 function parseYamlEntries(raw: string): HermesConfigEntry[] {
   const entries: HermesConfigEntry[] = [];
@@ -50,33 +44,9 @@ function parseYamlEntries(raw: string): HermesConfigEntry[] {
       entries.push({
         key: fullKey,
         value,
-        source: 'config.yaml' as HermesConfigSource,
-        masked: false,
         section: currentSection
       });
     }
-  }
-
-  return entries;
-}
-
-function parseEnvEntries(raw: string): HermesConfigEntry[] {
-  const entries: HermesConfigEntry[] = [];
-
-  for (const rawLine of raw.replace(/\r\n/g, '\n').split('\n')) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('#')) continue;
-
-    const match = line.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
-    if (!match || !match[1]) continue;
-
-    entries.push({
-      key: match[1],
-      value: MASK,
-      source: '.env' as HermesConfigSource,
-      masked: true,
-      section: null
-    });
   }
 
   return entries;
@@ -86,22 +56,14 @@ export function readHermesConfig(): HermesConfigIndex {
   const paths = resolveInventoryPathConfigFromEnv();
   const hermesRoot = paths.hermesRoot.path;
   const configPath = path.join(hermesRoot, 'config.yaml');
-  const envPath = path.join(hermesRoot, '.env');
 
   const configResult = readTextFileResult(configPath);
-  const envResult = readTextFileResult(envPath);
-
   const rawConfig = configResult.content ?? null;
-  const rawEnv = envResult.content ? maskEnvContent(envResult.content) : null;
-
   const configEntries = rawConfig ? parseYamlEntries(rawConfig) : [];
-  const envEntries = envResult.content ? parseEnvEntries(envResult.content) : [];
 
   return {
-    entries: [...configEntries, ...envEntries],
+    entries: configEntries,
     rawConfig,
-    rawEnv,
-    configPath,
-    envPath
+    configPath
   };
 }
