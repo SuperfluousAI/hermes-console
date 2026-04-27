@@ -1,0 +1,126 @@
+name: build-push
+
+# Builds the SuperfluousAI fork of hermes-console (with our BASE_PATH +
+# HOST patches) and ships the image to ECR.
+#
+# -----------------------------------------------------------------------
+# Required repo secrets (Settings → Secrets and variables → Actions):
+# -----------------------------------------------------------------------
+#
+#   ECR_AWS_ACCESS_KEY_ID      AWS access key with ECR push perms on
+#                              596633517329.dkr.ecr.us-east-1.amazonaws.com/superfluous-apps.
+#                              Same key already in use by SuperfluousAI/superfluous-bot,
+#                              superfluous-corey, superfluous-vibes — reuse it.
+#
+#   ECR_AWS_SECRET_ACCESS_KEY  Matching secret for the access key above.
+#
+# Manual trigger:
+#   Actions → "build-push" → "Run workflow" → branch: main
+
+on:
+  push:
+    branches: [main]
+    # Only fire when something image-affecting changes. Source code,
+    # Dockerfile, lockfile, package metadata.
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.base.json'
+      - 'tsconfig.json'
+      - '.github/workflows/build-push.yml'
+  workflow_dispatch:
+    inputs:
+      base_path:
+        description: 'Override BASE_PATH baked into the Vite bundle (default /console)'
+        required: false
+        type: string
+        default: '/console'
+
+concurrency:
+  group: build-push
+  cancel-in-progress: false
+
+env:
+  ECR_REGISTRY: 596633517329.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPO: 596633517329.dkr.ecr.us-east-1.amazonaws.com/superfluous-apps
+  AWS_REGION: us-east-1
+  IMAGE_NAME_PREFIX: hermes-console
+
+permissions:
+  contents: read
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve build inputs
+        id: resolve
+        env:
+          INPUT_BASE_PATH: ${{ inputs.base_path }}
+        run: |
+          set -u
+          base_path="${INPUT_BASE_PATH:-/console}"
+          # Read app version from package.json so the image tag carries it.
+          app_version=$(node -p "require('./package.json').version")
+          [ -n "$app_version" ] || { echo "::error::could not read app version"; exit 1; }
+          # Tag shape: hermes-console-vX.Y.Z-YYYYMMDD-HHMM
+          stamp=$(date -u +%Y%m%d-%H%M)
+          image_tag="${IMAGE_NAME_PREFIX}-v${app_version}-${stamp}"
+          echo "base_path=$base_path"   >> "$GITHUB_OUTPUT"
+          echo "app_version=$app_version" >> "$GITHUB_OUTPUT"
+          echo "image_tag=$image_tag"   >> "$GITHUB_OUTPUT"
+          echo "Will build $image_tag with BASE_PATH=$base_path"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build + push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            BASE_PATH=${{ steps.resolve.outputs.base_path }}
+          tags: |
+            ${{ env.ECR_REPO }}:${{ steps.resolve.outputs.image_tag }}
+          # Use registry cache to make subsequent builds faster. Cache
+          # entry is a separate manifest tag that doesn't pollute the
+          # image-tag list (filterable by name prefix in ECR console).
+          cache-from: type=registry,ref=${{ env.ECR_REPO }}:hermes-console-buildcache
+          cache-to: type=registry,ref=${{ env.ECR_REPO }}:hermes-console-buildcache,mode=max
+
+      - name: Summary
+        env:
+          IMAGE_TAG: ${{ steps.resolve.outputs.image_tag }}
+        run: |
+          echo "Pushed: $ECR_REPO:$IMAGE_TAG"
+          echo "## Build summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Image: \`$ECR_REPO:$IMAGE_TAG\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "BASE_PATH baked in: \`${{ steps.resolve.outputs.base_path }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Bump it in the bot chart to roll out:" >> "$GITHUB_STEP_SUMMARY"
+          echo '```yaml' >> "$GITHUB_STEP_SUMMARY"
+          echo "      image: $ECR_REPO:$IMAGE_TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
