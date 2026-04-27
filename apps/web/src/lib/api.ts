@@ -40,6 +40,20 @@ const readErrorMessage = async (response: Response): Promise<string> => {
   }
 };
 
+// Prefix every API call with Vite's BASE_URL. Without this, fetch('/api/foo')
+// resolves to the page origin's `/api/foo`, which bypasses the configured
+// base path entirely. With BASE_PATH=/console set at build time,
+// import.meta.env.BASE_URL is `/console/`; we strip the trailing slash and
+// concatenate so `/api/meta/app` becomes `/console/api/meta/app`. When no
+// base is configured BASE_URL is `/`, this is a no-op.
+const apiBase = ((): string => {
+  const raw = import.meta.env.BASE_URL ?? '/';
+  if (raw === '/' || raw === '') return '';
+  return raw.replace(/\/+$/, '');
+})();
+
+const withBase = (path: string): string => `${apiBase}${path}`;
+
 const fetchJson = async <T>({
   init,
   path,
@@ -49,7 +63,7 @@ const fetchJson = async <T>({
   path: string;
   schema: z.ZodType<T>;
 }): Promise<T> => {
-  const response = await fetch(path, {
+  const response = await fetch(withBase(path), {
     headers: {
       Accept: 'application/json'
     },

@@ -93,6 +93,12 @@ const createLiveDiagnosticsResponse = async (): Promise<DiagnosticsResponse> => 
 };
 
 export const createApp = ({ config }: { config: ServerConfig }) => {
+  // Build the application as a self-contained Hono instance with all
+  // routes (`/api/*`) and the static-site catch-all defined at root.
+  // If a basePath is configured, we mount this whole instance under it
+  // via `outer.route(basePath, app)` at the bottom — that way every
+  // existing route definition stays unchanged and we don't have to
+  // remember to prefix `/api/foo` everywhere.
   const app = new Hono();
 
   app.onError((error, context) => {
@@ -291,8 +297,20 @@ export const createApp = ({ config }: { config: ServerConfig }) => {
 
   registerStaticSite({
     app,
-    webDistDir: config.webDistDir
+    webDistDir: config.webDistDir,
+    basePath: config.basePath
   });
+
+  if (config.basePath) {
+    // Mount the inner app under the configured prefix. Requests to
+    // `<basePath>/api/foo` are routed to the inner app's `/api/foo`
+    // handler. The inner app's `c.req.path` still reports the FULL
+    // path (Hono semantic), which is why static-site.ts also receives
+    // `basePath` and strips it before resolving disk paths.
+    const outer = new Hono();
+    outer.route(config.basePath, app);
+    return outer;
+  }
 
   return app;
 };

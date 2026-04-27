@@ -311,6 +311,19 @@ const routeTree = rootRoute.addChildren([
   configRoute
 ]);
 
+// When Vite's `base` is set (via BASE_PATH at build time), every page is
+// served under the prefix; the router needs the same prefix so that
+// `<Link to="/sessions">` produces `/console/sessions` instead of just
+// `/sessions`. Vite exposes the value at runtime as `import.meta.env.BASE_URL`
+// (`'/console/'` with trailing slash, or `'/'` for root). TanStack Router's
+// `basepath` is documented to take a non-trailing-slash form, so we strip
+// the trailing slash and only pass it when there's actually a prefix.
+const routerBasepath = ((): string | undefined => {
+  const raw = import.meta.env.BASE_URL ?? '/';
+  if (raw === '/' || raw === '') return undefined;
+  return raw.replace(/\/+$/, '') || undefined;
+})();
+
 export const createAppRouter = ({ history, queryClient }: { history?: RouterHistory; queryClient: QueryClient }) =>
   createRouter({
     context: {
@@ -318,6 +331,7 @@ export const createAppRouter = ({ history, queryClient }: { history?: RouterHist
     },
     defaultPreload: 'intent',
     ...(history == null ? {} : { history }),
+    ...(routerBasepath == null ? {} : { basepath: routerBasepath }),
     routeTree
   });
 

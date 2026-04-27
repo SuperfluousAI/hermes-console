@@ -113,13 +113,36 @@ const serveIndex = ({ context, webDistDir }: { context: Context; webDistDir: str
   }
 };
 
-export const registerStaticSite = ({ app, webDistDir }: { app: Hono; webDistDir: string }) => {
+// Strip the configured base path off the front of the request URL so the
+// rest of this handler can resolve files relative to webDistDir as if the
+// app were mounted at root. Hono's `app.route(basePath, inner)` routes the
+// request to the inner app but `c.req.path` still reports the full URL,
+// so we have to do this manually.
+const stripBasePath = ({ requestPath, basePath }: { requestPath: string; basePath: string }): string => {
+  if (basePath === '' || basePath === '/') return requestPath;
+  if (requestPath === basePath) return '/';
+  if (requestPath.startsWith(`${basePath}/`)) {
+    return requestPath.slice(basePath.length);
+  }
+  return requestPath;
+};
+
+export const registerStaticSite = ({
+  app,
+  webDistDir,
+  basePath = ''
+}: {
+  app: Hono;
+  webDistDir: string;
+  basePath?: string;
+}) => {
   app.get('*', (context) => {
-    if (context.req.path.startsWith('/api')) {
+    const requestPath = stripBasePath({ requestPath: context.req.path, basePath });
+
+    if (requestPath.startsWith('/api')) {
       return context.notFound();
     }
 
-    const requestPath = context.req.path;
     const relativePath = requestPath === '/' ? '/index.html' : requestPath;
     const staticFile = readStaticFile({
       relativePath,

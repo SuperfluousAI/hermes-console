@@ -6,11 +6,17 @@ import { createApp } from '@/app';
 import { readServerConfig } from '@/config';
 
 const config = readServerConfig();
-const hostname = '127.0.0.1';
+const hostname = config.host;
 
 const app = createApp({
   config
 });
+
+if (hostname !== '127.0.0.1') {
+  console.warn(
+    `[api] HOST=${hostname} — binding on a non-loopback interface. Hermes Console is local-first by design; only set this when running behind a reverse proxy you trust to gate access.`
+  );
+}
 
 const server = serve(
   {
