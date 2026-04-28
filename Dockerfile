@@ -26,6 +26,11 @@ WORKDIR /app
 # Copy lockfile + workspace metadata FIRST for better caching when only
 # source changes. pnpm fetches all deps based on the lockfile alone.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Root tsconfigs are referenced via "extends": "../../tsconfig.base.json"
+# from every package. If they're missing, tsc errors with TS5083 and falls
+# back to default compiler options, which produces confusing downstream
+# type errors (the real problem is the missing extends target).
+COPY tsconfig.json tsconfig.base.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY packages packages/
