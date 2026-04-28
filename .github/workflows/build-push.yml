@@ -104,11 +104,13 @@ jobs:
             BASE_PATH=${{ steps.resolve.outputs.base_path }}
           tags: |
             ${{ env.ECR_REPO }}:${{ steps.resolve.outputs.image_tag }}
-          # Use registry cache to make subsequent builds faster. Cache
-          # entry is a separate manifest tag that doesn't pollute the
-          # image-tag list (filterable by name prefix in ECR console).
-          cache-from: type=registry,ref=${{ env.ECR_REPO }}:hermes-console-buildcache
-          cache-to: type=registry,ref=${{ env.ECR_REPO }}:hermes-console-buildcache,mode=max
+          # GHA cache (not registry cache): the ECR repo has tag
+          # immutability enforced, so the registry-cache pattern fails on
+          # the second build with "tag is immutable" when buildx tries to
+          # overwrite the cache manifest. GHA cache is per-repo, free up
+          # to 10GB, and avoids the immutability conflict entirely.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Summary
         env:
