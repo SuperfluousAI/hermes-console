@@ -46,7 +46,9 @@ ENV BASE_PATH=${BASE_PATH}
 RUN pnpm build
 
 # Strip dev deps so the runtime image carries only what's needed for `pnpm start`.
-RUN pnpm prune --prod
+# CI=true so pnpm prune is non-interactive (otherwise:
+# ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY).
+RUN CI=true pnpm prune --prod
 
 # ─── Runtime ───────────────────────────────────────────────────────────────
 FROM ${NODE_IMAGE}
