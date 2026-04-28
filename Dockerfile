@@ -59,6 +59,13 @@ FROM ${NODE_IMAGE}
 
 RUN corepack enable
 
+# python3 is a hard runtime requirement: the API shells out to
+# `python3 -c <SQLITE_SCRIPT>` (apps/api/src/features/sessions/
+# node-session-sources.ts) to inspect Hermes session SQLite databases.
+# Without it the dashboard surfaces "Python runtime is unavailable"
+# warnings on the Overview page.
+RUN apk add --no-cache python3
+
 # Match the bot platform's pod security model: non-root, fixed uid 10000
 # (same as hermes-agent so shared volumes work via fsGroup=10000).
 RUN addgroup -g 10000 hermes \
