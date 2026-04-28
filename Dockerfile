@@ -45,10 +45,14 @@ ENV BASE_PATH=${BASE_PATH}
 
 RUN pnpm build
 
-# Strip dev deps so the runtime image carries only what's needed for `pnpm start`.
-# CI=true so pnpm prune is non-interactive (otherwise:
-# ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY).
-RUN CI=true pnpm prune --prod
+# NOTE: skipping `pnpm prune --prod` deliberately. In pnpm workspaces it
+# breaks runtime because the API's runtime deps (`@hono/node-server`,
+# `hono`, `cron-parser`, `dotenv`, `zod`) get pruned out of the per-app
+# node_modules even though they're declared in `dependencies`. The proper
+# replacement is `pnpm deploy --prod --filter @hermes-console/api ...`
+# which produces a self-contained app dir, but that's a bigger Dockerfile
+# refactor. Keeping devDeps in the runtime image for now — the tradeoff
+# is image size, not correctness.
 
 # ─── Runtime ───────────────────────────────────────────────────────────────
 FROM ${NODE_IMAGE}
